@@ -1,0 +1,36 @@
+
+k3s_cluster:
+  children:
+    controlplane1
+    # pi:
+
+amd64:
+  children:
+    controlplane1
+
+arm:
+  children:
+    pi
+
+controlplane1:
+  hosts:
+    node0:
+      ansible_user: controlplane1
+      ansible_host: 192.168.1.100
+      ansible_python_interpreter: /usr/bin/python3
+
+# pi:
+#   hosts:
+#     node0:
+#       ansible_user: pi
+#       ansible_host: 192.168.1.100
+#       ansible_python_interpreter: /usr/bin/python3
+#     node1:
+#       ansible_user: pi
+#       ansible_host: 192.168.1.101
+#       ansible_python_interpreter: /usr/bin/python3
+#     node2:
+#       ansible_user: pi
+#       ansible_host: 192.168.1.102
+#       ansible_python_interpreter: /usr/bin/python3
+
