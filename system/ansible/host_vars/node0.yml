@@ -1,0 +1,7 @@
+k3s_control_node: true
+k3s_server:
+  write-kubeconfig-mode: '0644'
+
+k3s_agent:
+  node-label:
+    - "storage-raid=true"

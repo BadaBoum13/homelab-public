@@ -1,0 +1,75 @@
+---
+- name: Bootstrap AMD64 serves and common packages
+  hosts: amd64
+  become: true
+  tasks:
+    - name: Update apt cache
+      apt:
+        update_cache: yes
+        cache_valid_time: 3600
+
+    - name: Upgrade all packages
+      apt:
+        upgrade: dist
+
+    - name: Install common packages
+      apt:
+        name:
+          - curl
+          - git
+          - htop
+          - vim
+          - wget
+          - zsh
+        state: present
+
+    - name: Set zsh as default shell for root
+      user:
+        name: root
+        shell: /bin/zsh
+
+    - name: Set zsh as default shell for current user
+      user:
+        name: "{{ ansible_user }}"
+        shell: /bin/zsh
+
+    - name: Harden SSH configuration
+      lineinfile:
+        path: /etc/ssh/sshd_config
+        regexp: "{{ item.regexp }}"
+        line: "{{ item.line }}"
+        state: present
+        backup: yes
+      with_items:
+        - { regexp: "^PermitRootLogin", line: "PermitRootLogin no" }
+        - {
+            regexp: "^PasswordAuthentication",
+            line: "PasswordAuthentication no",
+          }
+        - {
+            regexp: "^ChallengeResponseAuthentication",
+            line: "ChallengeResponseAuthentication no",
+          }
+        - { regexp: "^UsePAM", line: "UsePAM yes" }
+        - { regexp: "^X11Forwarding", line: "X11Forwarding no" }
+        - { regexp: "^AllowTcpForwarding", line: "AllowTcpForwarding no" }
+        - { regexp: "^MaxAuthTries", line: "MaxAuthTries 3" }
+        - { regexp: "^LoginGraceTime", line: "LoginGraceTime 30" }
+        - { regexp: "^PermitEmptyPasswords", line: "PermitEmptyPasswords no" }
+        - { regexp: "^ClientAliveInterval", line: "ClientAliveInterval 300" }
+        - { regexp: "^ClientAliveCountMax", line: "ClientAliveCountMax 2" }
+      notify: restart ssh
+
+    - name: Allow passwordless sudo for current user
+      lineinfile:
+        path: /etc/sudoers.d/{{ ansible_user }}
+        create: yes
+        mode: "0440"
+        line: "{{ ansible_user }} ALL=(ALL) NOPASSWD:ALL"
+
+  handlers:
+    - name: restart ssh
+      service:
+        name: ssh
+        state: restarted
+
