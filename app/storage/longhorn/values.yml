@@ -1,0 +1,16 @@
+defaultSettings:
+  defaultDataPath: "/mnt/longhorn"   # Path where SSD/HDD is mounted
+  defaultReplicaCount: 2             # For RAID-like redundancy
+  nodeDownPodDeletionPolicy: "delete-both-statefulset-and-deployment-pod"
+
+# ingress:
+#   enabled: true
+#   host: longhorn.homelab.local
+#   ingressClassName: traefik
+#   annotations:
+#     kubernetes.io/ingress.class: "traefik"
+
+
+persistence:
+  defaultClass: true
+  defaultClassReplicaCount: 2
