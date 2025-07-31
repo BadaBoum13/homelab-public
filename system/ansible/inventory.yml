@@ -12,6 +12,10 @@ arm:
   children:
     pi
 
+tailscale:
+  children:
+    controlplane1
+
 controlplane1:
   hosts:
     node0:
