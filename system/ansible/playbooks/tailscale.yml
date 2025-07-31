@@ -1,0 +1,30 @@
+---
+- name: Install Tailscale on Ubuntu
+  hosts: tailscale
+  become: yes
+  tasks:
+
+    - name: Ensure tailscale required packages are installed
+      block:
+        - name: Add Tailscale GPG key
+          ansible.builtin.get_url:
+            url: https://pkgs.tailscale.com/stable/ubuntu/oracular.noarmor.gpg
+            dest: /usr/share/keyrings/tailscale-archive-keyring.gpg
+
+        - name: somerepo | apt source
+          ansible.builtin.apt_repository:
+            repo: "deb [signed-by=/usr/share/keyrings/tailscale-archive-keyring.gpg] https://pkgs.tailscale.com/stable/ubuntu oracular main"
+            state: present
+
+    - name: Update apt cache
+      ansible.builtin.apt:
+        update_cache: yes
+
+    - name: Install Tailscale
+      ansible.builtin.apt:
+        name: tailscale
+        state: present
+
+    - name: Start and enable Tailscale service
+      ansible.builtin.command:
+        cmd: tailscale up {{ tailscale.auth_key | default("") }} {{ tailscale.opt | default("") }}

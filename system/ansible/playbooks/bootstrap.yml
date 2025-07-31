@@ -23,6 +23,14 @@
           - zsh
         state: present
 
+    - name: Install packages for longhorn
+      apt:
+        name:
+          - open-iscsi
+          - nfs-common
+        state: present
+      when: storage.enable | default(false)
+
     - name: Set zsh as default shell for root
       user:
         name: root
@@ -34,7 +42,7 @@
         shell: /bin/zsh
 
     - name: Harden SSH configuration
-      lineinfile:
+      ansible.builtin.lineinfile:
         path: /etc/ssh/sshd_config
         regexp: "{{ item.regexp }}"
         line: "{{ item.line }}"
@@ -61,11 +69,38 @@
       notify: restart ssh
 
     - name: Allow passwordless sudo for current user
-      lineinfile:
+      ansible.builtin.lineinfile:
         path: /etc/sudoers.d/{{ ansible_user }}
         create: yes
         mode: "0440"
         line: "{{ ansible_user }} ALL=(ALL) NOPASSWD:ALL"
+
+    - name: Mount volume {{ storage.path_mount }}
+      when: storage.enable | default(false)
+      block:
+        - name: Ensure {{ storage.path_mount }} directory exists
+          ansible.builtin.file:
+            path: "{{ storage.path_mount }}"
+            state: directory
+            owner: "{{ ansible_user }}"
+            group: "{{ ansible_user }}"
+            mode: '0755'
+
+        - name: Ensure /mnt/short_live_storage directory exists
+          ansible.builtin.file:
+            path: "/mnt/short_live_storage"
+            state: directory
+            owner: "{{ ansible_user }}"
+            group: "{{ ansible_user }}"
+            mode: '0755'
+
+        - name: Mount {{ storage.path_mount }}
+          ansible.posix.mount:
+            path: "{{ storage.path_mount }}"
+            src: "UUID={{ storage.device_id }}"
+            fstype: "{{ storage.fs_type }}"
+            opts: defaults,nofail #,x-systemd.device-timeout=30
+            state: mounted
 
   handlers:
     - name: restart ssh
