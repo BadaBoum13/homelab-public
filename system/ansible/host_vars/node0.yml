@@ -28,6 +28,13 @@ longhorn_starage_labels:
 
 
 
+storage:
+  enable: true
+  device_id: "cdc77249-f74c-4eb4-a423-69831486ed8d"
+  fs_type: "ext4"
+  path_mount: "/mnt/long_storage"
+
+
 k3s_agent:
   node-label:
     - "storage-raid=true"
