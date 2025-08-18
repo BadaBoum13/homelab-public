@@ -1,0 +1,135 @@
+nextcloud:
+  host: nextcloud.biduleproofzone.ovh
+  defaultConfigs:
+    imaginary.config.php: true
+  ## SMTP configuration
+  mail:
+    enabled: false
+    # the user we send email as
+    fromAddress: user
+    # the domain we send email from
+    domain: biduleproofzone.ovh
+    smtp:
+      host: biduleproofzone.ovh
+      secure: ssl
+      port: 465
+      authtype: LOGIN
+  ## Use an existing secret
+  existingSecret:
+    enabled: true
+    secretName: nextcloud-secret
+    usernameKey: nextcloud-username
+    passwordKey: nextcloud-password
+    # tokenKey: ""
+    # smtpUsernameKey: smtp-username
+    # smtpPasswordKey: smtp-password
+    # smtpHostKey: smtp-host
+  # Extra config files created in /var/www/html/config/
+  # ref: https://docs.nextcloud.com/server/latest/admin_manual/configuration_server/config_sample_php_parameters.html#multiple-config-php-file
+  configs:
+   previews.config.php: |-
+     <?php
+     $CONFIG = array (
+       'overwrite.cli.url' => "https://nextcloud.biduleproofzone.ovh",
+       'overwritehost' => "nextcloud.biduleproofzone.ovh",
+       'overwriteprotocol' => "https", 
+       'enable_previews' => true,
+       'enabledPreviewProviders' => array (
+         'OC\Preview\Movie',
+         'OC\Preview\PNG',
+         'OC\Preview\JPEG',
+         'OC\Preview\GIF',
+         'OC\Preview\BMP',
+         'OC\Preview\XBitmap',
+         'OC\Preview\MP3',
+         'OC\Preview\MP4',
+         'OC\Preview\TXT',
+         'OC\Preview\MarkDown',
+         'OC\Preview\PDF'
+       ),
+     );
+
+
+
+imaginary:
+  enabled: true
+
+ingress:
+  enabled: true
+  ingressClassName: traefik
+  annotations:
+    kubernetes.io/ingress.class: "traefik"
+    cert-manager.io/cluster-issuer: "cloudflare"
+  tls:
+    - secretName: nextcloud-tls
+      hosts:
+        - nextcloud.biduleproofzone.ovh
+
+internalDatabase:
+  enabled: false
+
+##
+## External database configuration
+##
+externalDatabase:
+  enabled: true
+  ## Supported database engines: mysql or postgresql
+  type: postgresql
+  ## Database host. You can optionally include a colon delimited port like "myhost:1234"
+  host: "postgresql.shared.svc.cluster.local"
+  port: 5432
+  ## Database user
+  user: nextcloud
+  ## Database password
+  # password: ""
+  ## Database name
+  database: nextcloud
+  ## Use a existing secret
+  existingSecret:
+    enabled: true
+    secretName: nextcloud-secret
+    usernameKey: postgres-username
+    passwordKey: postgres-password
+    # hostKey: db-hostname-or-ip
+    # databaseKey: db-name
+
+
+cronjob:
+  enabled: true
+
+persistence:
+  # Nextcloud Data (/var/www/html)
+  enabled: true
+  accessMode: ReadWriteOnce
+  size: 10Gi
+  storageClass: "longhorn-ssd"
+  nextcloudData:
+    enabled: true
+    subPath:
+    storageClass: "longhorn-raid"
+    accessMode: ReadWriteOnce
+    size: 100Gi
+
+resources:
+  limits:
+    cpu: 2000m
+    memory: 2048Mi
+  requests:
+    cpu: 500m
+    memory: 1024Mi
+
+nodeSelector: {}
+
+metrics:
+  enabled: true
+  info:
+    apps: true
+    update: true
+  serviceMonitor:
+    enabled: true
+    interval: 30s
+    scrapeTimeout: 10s
+    namespace: "monitoring"
+  rules:
+    enabled: true
+    namespace: "monitoring"

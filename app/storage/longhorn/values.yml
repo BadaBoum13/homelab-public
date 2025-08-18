@@ -5,10 +5,13 @@ defaultSettings:
 
 ingress:
   enabled: true
-  host: homelab.inconnu-teeth.ts.net
+  host: longhorn.biduleproofzone.ovh
   ingressClassName: traefik
+  tls: true
+  secureBackends: true
   annotations:
     kubernetes.io/ingress.class: "traefik"
+    cert-manager.io/cluster-issuer: "cloudflare"
 
 
 persistence:
@@ -17,8 +20,7 @@ persistence:
 
 longhornDriver:
   log:
-    # -- Format of longhorn-driver logs. (Options: "plain", "json")
-    format: plain
+    format: json
   nodeSelector:
     storage-raid: "true"
 

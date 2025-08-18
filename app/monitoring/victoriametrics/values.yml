@@ -1,0 +1,32 @@
+serviceAccount:
+  create: true
+
+rbac:
+  create: true
+
+config:
+  logLevel: info
+  logFormat: text
+  metricsAddr: ":8080"
+  healthProbeAddr: ":8081"
+  leaderElection:
+    enabled: true
+    resourceName: "victoriametrics-operator-lock"
+    id: ""
+
+resources:
+  limits:
+    cpu: 100m
+    memory: 128Mi
+  requests:
+    cpu: 100m
+    memory: 128Mi
+
+nodeSelector: {}
+
+serviceMonitor:
+  enabled: false
+
+crds:
+  enabled: false
+

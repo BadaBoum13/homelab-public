@@ -1,0 +1,23 @@
+apiVersion: operator.victoriametrics.com/v1beta1
+kind: VMAlert
+metadata:
+  name: vm-alert
+  namespace: monitoring
+spec:
+  datasource:
+    url: "http://vmsingle.monitoring.svc.cluster.local:8429"
+  notifier:
+    url: http://vmalertmanager.monitoring.svc.cluster.local:9093
+  remoteWrite:
+    url: http://vmsingle-vm-single.monitoring.svc.cluster.local:8429/api/v1/write
+  evaluationInterval: "30s"
+  selectAllByDefault: true
+  resources:
+    requests:
+      memory: "256Mi"
+      cpu: "250m"
+    limits:
+      memory: "512Mi"
+      cpu: "500m"
+  ruleSelector: {}
+  ruleNamespaceSelector: {}
