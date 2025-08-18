@@ -1,0 +1,74 @@
+# values.yaml for Grafana Helm chart
+
+# Enable persistence for Grafana
+persistence:
+  enabled: true
+  size: 10Gi
+  storageClassName: longhorn-ssd
+
+serviceMonitor:
+  enabled: true
+  # interval: 30s
+  # scrapeTimeout: 10s
+
+ingress:
+  enabled: true
+  hosts:
+    - grafana.biduleproofzone.ovh
+  ingressClassName: traefik
+  annotations:
+    kubernetes.io/ingress.class: "traefik"
+    cert-manager.io/cluster-issuer: "cloudflare"
+  tls:
+    - secretName: grafana-tls
+      hosts:
+        - grafana.biduleproofzone.ovh
+
+# Use an existing secret for the admin user.
+admin:
+  ## Name of the secret. Can be templated.
+  existingSecret: "grafana-admin-secret"
+  userKey: admin-user
+  passwordKey: admin-password
+
+datasources:
+  datasources.yaml:
+    apiVersion: 1
+    datasources:
+      - name: VictoriaMetrics
+        type: prometheus
+        access: proxy
+        url: http://vmsingle-vm-single.monitoring.svc.cluster.local:8428
+        isDefault: true
+        editable: true
+
+# dashboardProviders:
+#   dashboardproviders.yaml:
+#     apiVersion: 1
+#     providers:
+#       - name: 'default'
+#         orgId: 1
+#         folder: ''
+#         type: file
+#         disableDeletion: false
+#         editable: true
+#         options:
+#           path: /var/lib/grafana/dashboards/default
+
+# Configure Grafana dashboards
+# dashboards:
+#   default:
+#     node-exporter-full:
+#       url: https://grafana.com/api/dashboards/1860/revisions/22/download
+#       datasource: VictoriaMetrics
+
+resources:
+  requests:
+    cpu: 100m
+    memory: 128Mi
+  limits:
+    cpu: 1
+    memory: 512Mi
+
+
+    

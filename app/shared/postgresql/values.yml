@@ -1,0 +1,27 @@
+auth:
+  enablePostgresUser: true
+  database: "nextcloud"
+  username: "nextcloud"
+  existingSecret: postgresql-secret
+  secretKeys:
+    adminPasswordKey: postgres-admin-password
+    userPasswordKey: postgres-user-password
+
+
+primary:
+  persistence:
+    enabled: true
+    storageClass: "longhorn-ssd"
+    size: 8Gi
+
+service:
+  type: ClusterIP
+  port: 5432
+
+resources:
+  requests:
+    memory: 256Mi
+    cpu: 250m
+  limits:
+    memory: 512Mi
+    cpu: 500m
