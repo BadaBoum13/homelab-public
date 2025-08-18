@@ -76,28 +76,28 @@
         mode: "0440"
         line: "{{ ansible_user }} ALL=(ALL) NOPASSWD:ALL"
 
-    - name: Mount volume {{ storage.path_mount }}
+    - name: Mount volume {{ storage.path_mount_long_storage }}
       when: storage.enable | default(false)
       block:
-        - name: Ensure {{ storage.path_mount }} directory exists
+        - name: Ensure {{ storage.path_mount_long_storage }} directory exists
           ansible.builtin.file:
-            path: "{{ storage.path_mount }}"
+            path: "{{ storage.path_mount_long_storage }}"
             state: directory
             owner: "{{ ansible_user }}"
             group: "{{ ansible_user }}"
             mode: '0755'
 
-        - name: Ensure /mnt/short_live_storage directory exists
+        - name: Ensure {{ storage.path_mount_short_storage }} directory exists
           ansible.builtin.file:
-            path: "/mnt/short_live_storage"
+            path: "{{ storage.path_mount_short_storage }}"
             state: directory
             owner: "{{ ansible_user }}"
             group: "{{ ansible_user }}"
             mode: '0755'
 
-        - name: Mount {{ storage.path_mount }}
+        - name: Mount {{ storage.path_mount_long_storage }}
           ansible.posix.mount:
-            path: "{{ storage.path_mount }}"
+            path: "{{ storage.path_mount_long_storage }}"
             src: "UUID={{ storage.device_id }}"
             fstype: "{{ storage.fs_type }}"
             opts: defaults,nofail #,x-systemd.device-timeout=30
