@@ -21,6 +21,7 @@
           - vim
           - wget
           - zsh
+          - cron
         state: present
 
     - name: Install packages for longhorn
@@ -101,6 +102,14 @@
             fstype: "{{ storage.fs_type }}"
             opts: defaults,nofail #,x-systemd.device-timeout=30
             state: mounted
+
+    - name: Add daily shutdown cron job
+      ansible.builtin.cron:
+        name: "Daily shutdown at 23:30"
+        minute: "30"
+        hour: "23"
+        job: "shutdown -h now"
+        user: root
 
   handlers:
     - name: restart ssh
