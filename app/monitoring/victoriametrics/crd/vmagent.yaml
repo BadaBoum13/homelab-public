@@ -4,8 +4,11 @@ metadata:
   name: vmagent
   namespace: monitoring
 spec:
+  serviceScrapeNamespaceSelector: {}
   serviceScrapeSelector: {}
+  podScrapeNamespaceSelector: {}
   podScrapeSelector: {}
+  nodeScrapeNamespaceSelector: {}
   nodeScrapeSelector: {}
   
   remoteWrite:
