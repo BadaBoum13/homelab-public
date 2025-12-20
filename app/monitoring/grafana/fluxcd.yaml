@@ -1,21 +1,11 @@
----
 apiVersion: source.toolkit.fluxcd.io/v1
 kind: HelmRepository
 metadata:
   name: grafana
-  namespace: flux-system
+  namespace: monitoring
 spec:
   interval: 1h
   url: https://grafana.github.io/helm-charts
----
-apiVersion: kustomize.config.k8s.io/v1beta1
-kind: Kustomization
-resources:
-  - .
-configMapGenerator:
-  - name: grafana-values
-    files:
-      - values.yaml
 ---
 apiVersion: helm.toolkit.fluxcd.io/v2
 kind: HelmRelease
@@ -24,18 +14,16 @@ metadata:
   namespace: monitoring
 spec:
   interval: 5m
-  install:
-    createNamespace: true
   targetNamespace: monitoring
+  releaseName: grafana
+  valuesFrom:
+    - kind: ConfigMap
+      name: grafana-values
   chart:
     spec:
       chart: grafana
-      releaseName: grafana
       # version: "1.0.0"
       sourceRef:
         kind: HelmRepository
         name: grafana
-        namespace: flux-system
-    valuesFrom:
-      - kind: ConfigMap
-        name: grafana-values
+        namespace: monitoring
