@@ -10,7 +10,7 @@ metadata:
   namespace: monitoring
 spec:
   interval: 1h
-  url: oci://ghcr.io/prometheus-community/charts/prometheus-operator-crd
+  url: oci://ghcr.io/prometheus-community/charts/prometheus-operator-crds
   ref:
     semver: ">= 25.0.0"
 ---
