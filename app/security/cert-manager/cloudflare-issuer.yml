@@ -4,7 +4,7 @@ metadata:
   name: cloudflare
 spec:
   acme:
-    email: julien.bohon@gmail.com
+    email: julien.bohon+letsencrypt@gmail.com
     profile: tlsserver
     server: https://acme-v02.api.letsencrypt.org/directory
     privateKeySecretRef:
