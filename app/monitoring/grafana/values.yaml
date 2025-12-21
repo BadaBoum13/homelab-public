@@ -1,5 +1,3 @@
-# values.yaml for Grafana Helm chart
-
 # Enable persistence for Grafana
 persistence:
   enabled: true

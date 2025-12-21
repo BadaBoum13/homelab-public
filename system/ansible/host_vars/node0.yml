@@ -28,6 +28,30 @@ longhorn_starage_labels:
 
 
 
+storage:
+  enable: true
+  device_id: "cdc77249-f74c-4eb4-a423-69831486ed8d"
+  fs_type: "ext4"
+  path_mount_long_storage: "/mnt/long_storage"
+  path_mount_short_storage: "/mnt/short_live_storage"
+
+longhorn_starage_labels:
+  - path: "{{ storage.path_mount }}"
+    allowScheduling: true
+    # storageReserved: 10485760
+    tags:
+    - hdd
+    - raid
+    - slow
+  - name: fast-ssd-disk
+    path: "{{ storage.path_mount_short_storage }}"
+    allowScheduling: true
+    tags:
+    - ssd
+    - fast
+
+
+
 k3s_agent:
   node-label:
     - "storage-raid=true"

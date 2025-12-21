@@ -1,4 +1,0 @@
-namespaceOverride: "argocd"
-
-controller:
-  replicas: 1
