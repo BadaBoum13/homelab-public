@@ -1,0 +1,95 @@
+# Vector configuration for collecting logs and sending to VictoriaMetrics
+
+# Deploy Vector as a DaemonSet (runs on every node to collect logs)
+role: Agent
+
+resources:
+  requests:
+    cpu: 100m
+    memory: 64Mi
+  limits:
+    cpu: 500m
+    memory: 512Mi
+
+# Vector configuration
+config:
+  # Data sources - collect logs from various sources
+  sources:
+    kubernetes_logs:
+      type: kubernetes_logs
+      path: /var/log/pods
+      namespace: "*"
+      exclude:
+        pod_labels:
+          app: vector  # exclude vector's own logs
+    
+    # host_logs:
+    #   type: file
+    #   read_from: beginning
+    #   paths:
+    #     - /var/log/messages
+    #     - /var/log/syslog
+
+transforms:
+  add_k8s_metadata:
+    type: kubernetes_metadata
+    inputs:
+      - kubernetes_logs
+
+  add_env:
+    type: remap
+    inputs:
+      - add_k8s_metadata
+    source: |
+      .cluster = "${CLUSTER_NAME:-homelab}"
+      .environment = "${ENV:-prod}"
+
+  # Data sinks - send logs to VictoriaMetrics
+  sinks:
+    victoriametrics:
+      type: http
+      inputs:
+        - kubernetes_metadata
+        - host_logs
+      address: "http://vmsingle-vm-single.monitoring.svc.cluster.local:9080/"
+      compression: gzip
+      encoding:
+        codec: json
+      framing:
+        method: newline_delimited
+      healthcheck:
+        enabled: false
+    labels:
+      job: vector
+
+# Persistence for buffering logs
+persistence:
+  enabled: true
+  size: 1Gi
+  storageClassName: longhorn-ssd
+
+# Node selection for the DaemonSet
+nodeSelector: {}
+
+# Tolerations for scheduling on all nodes
+tolerations:
+  - effect: NoSchedule
+    operator: Exists
+  - effect: NoExecute
+    operator: Exists
+
+# Service Account
+serviceAccount:
+  create: true
+  name: vector
+
+# RBAC
+rbac:
+  create: true
+
+# Environment variables
+env:
+  - name: CLUSTER_NAME
+    value: homelab
+  - name: ENV
+    value: prod

@@ -1,0 +1,20 @@
+apiVersion: operator.victoriametrics.com/v1
+kind: VLSingle
+metadata:
+  name: vl-single
+  namespace: monitoring
+spec:
+  replicaCount: 1
+  retentionPeriod: "10d"
+  storage:
+    storageClassName: longhorn-ssd
+    resources:
+      requests:
+        storage: 30Gi
+  resources:
+    requests:
+      memory: "64Mi"
+      cpu: "250m"
+    limits:
+      memory: "128Mi"
+      cpu: "500m"
