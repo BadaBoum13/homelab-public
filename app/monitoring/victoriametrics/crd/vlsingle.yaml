@@ -4,6 +4,11 @@ metadata:
   name: vl-single
   namespace: monitoring
 spec:
+  # TODO pin the version to upgrade the vm compoment when necessary
+  # image:
+  #   repository:
+  #   tag: 
+  #   pullPolicy: Always
   replicaCount: 1
   retentionPeriod: "10d"
   storage:

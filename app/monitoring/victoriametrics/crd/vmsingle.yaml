@@ -5,6 +5,10 @@ metadata:
   namespace: monitoring
 spec:
   retentionPeriod: "365d"
+  # extraArgs:
+    # using enterprise features: Downsampling
+    # more details about downsampling you can read on https://docs.victoriametrics.com/victoriametrics/single-server-victoriametrics/#downsampling
+    # downsampling.period: 7d:1m,14d:5m,3m:1h,6m:6h
   storage:
     storageClassName: longhorn-ssd
     resources:
