@@ -1,0 +1,39 @@
+---
+version: '3'
+
+tasks:
+  default:
+    desc: Deploy VictoriaMetrics
+    cmds:
+      - task: deploy
+
+  repos:
+    desc: Add VictoriaMetrics Helm repository
+    vars:
+      REPO_NAME: victoriametrics
+    cmds:
+      - helm repo add {{.REPO_NAME}} https://victoriametrics.github.io/helm-charts/
+      - helm repo update {{.REPO_NAME}}
+
+  deploy:
+    desc: Deploy VictoriaMetrics using Helm
+    vars:
+      MONITORING_NS: monitoring
+      CHART_NAME_CRD: victoria-metrics-operator-crds
+      CHART_NAME: victoria-metrics-operator
+      REPO_NAME: victoriametrics
+      RELEASE_NAME_CRD: victoriametrics-crd
+      RELEASE_NAME: victoriametrics
+    cmds:
+      - helm upgrade --install {{.RELEASE_NAME_CRD}} {{.REPO_NAME}}/{{.CHART_NAME_CRD}} -n {{.MONITORING_NS}}
+      - helm upgrade --install {{.RELEASE_NAME}} {{.REPO_NAME}}/{{.CHART_NAME}} -n {{.MONITORING_NS}} -f {{.TASKFILE_DIR}}/values.yaml
+      - kubectl apply -f {{.TASKFILE_DIR}}/crd
+  clean:
+    desc: Remove VictoriaMetrics
+    vars:
+      MONITORING_NS: monitoring
+      RELEASE_NAME_CRD: victoriametrics-crd
+      RELEASE_NAME: victoriametrics
+    cmds:
+      - helm uninstall {{.RELEASE_NAME_CRD}} -n {{.MONITORING_NS}} --ignore-not-found
+      - helm uninstall {{.RELEASE_NAME}} -n {{.MONITORING_NS}} --ignore-not-found

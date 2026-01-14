@@ -1,0 +1,44 @@
+apiVersion: operator.victoriametrics.com/v1
+kind: VLAgent
+metadata:
+  name: vlagent
+  namespace: monitoring
+spec:
+  remoteWrite:
+    - url: http://vlsingle-vl-single.monitoring.svc.cluster.local:9428/insert/logs
+  # scrapeConfigs:
+  #   - jobName: kubernetes-pods
+
+  #     kubernetesSDConfigs:
+  #       - role: pod
+
+  #     pipelineStages:
+  #       - cri: {}
+
+  #     relabelConfigs:
+  #       - sourceLabels: [__meta_kubernetes_pod_node_name]
+  #         targetLabel: node
+
+  #       - sourceLabels: [__meta_kubernetes_namespace]
+  #         targetLabel: namespace
+
+  #       - sourceLabels: [__meta_kubernetes_pod_name]
+  #         targetLabel: pod
+
+  #       - sourceLabels: [__meta_kubernetes_pod_container_name]
+  #         targetLabel: container
+
+  #       - action: replace
+  #         sourceLabels:
+  #           - __meta_kubernetes_pod_uid
+  #           - __meta_kubernetes_pod_container_name
+  #         separator: /
+  #         targetLabel: __path__
+  #         replacement: /var/log/pods/*$1/*.log
+  resources:
+    requests:
+      cpu: 50m
+      memory: 64Mi
+    limits:
+      cpu: 200m
+      memory: 128Mi

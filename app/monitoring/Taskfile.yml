@@ -1,0 +1,56 @@
+---
+version: '3'
+
+includes:
+  grafana: ./grafana
+  victoriametrics: ./victoriametrics
+  vector: ./vector
+  kube-state-metrics: ./kube-state-metrics
+  prometheus-operator-crds: ./prometheus-operator-crds
+
+tasks:
+  default:
+    desc: Deploy all monitoring components
+    cmds:
+      - task: namespace
+      - task: repos
+      - task: deploy
+
+  namespace:
+    desc: Create monitoring namespace
+    vars:
+      MONITORING_NS: monitoring
+    cmds:
+      - kubectl create namespace {{.MONITORING_NS}} --dry-run=client -o yaml | kubectl apply -f -
+
+  github:
+    desc: register to github
+    cmds:
+      - helm registry login https://ghcr.io
+
+  repos:
+    desc: Add/update all Helm repositories
+    cmds:
+      - task: grafana:repos
+      - task: victoriametrics:repos
+      - task: vector:repos
+
+  deploy:
+    desc: Deploy all monitoring components
+    cmds:
+      - kubectl apply -f test/storage.yaml
+      - task: prometheus-operator-crds:deploy
+      - task: kube-state-metrics:deploy
+      - task: vector:deploy
+      - task: victoriametrics:deploy
+      - task: grafana:deploy
+
+  clean:
+    desc: Remove all monitoring components
+    cmds:
+      - task: grafana:clean
+      - task: victoriametrics:clean
+      - task: vector:clean
+      - task: kube-state-metrics:clean
+      - task: prometheus-operator-crds:clean
+      - kubectl delete -f test/storage.yaml
