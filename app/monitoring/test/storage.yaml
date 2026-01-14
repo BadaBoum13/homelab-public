@@ -5,4 +5,4 @@ metadata:
   name: longhorn-ssd
 provisioner: docker.io/hostpath
 reclaimPolicy: Delete
-volumeBindingMode: Immediate
+volumeBindingMode: Immediat
