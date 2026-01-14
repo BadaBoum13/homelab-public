@@ -1,7 +1,8 @@
+---
 apiVersion: storage.k8s.io/v1
 kind: StorageClass
 metadata:
   name: longhorn-ssd
-provisioner: rancher.io/local-path
+provisioner: docker.io/hostpath
 reclaimPolicy: Delete
-volumeBindingMode: WaitForFirstConsumer
+volumeBindingMode: Immediate
