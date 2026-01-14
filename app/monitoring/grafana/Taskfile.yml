@@ -1,0 +1,34 @@
+---
+version: '3'
+
+tasks:
+  default:
+    desc: Deploy Grafana
+    cmds:
+      - task: deploy
+
+  repos:
+    desc: Add Grafana Helm repository
+    vars:
+      REPO_NAME: grafana
+    cmds:
+      - helm repo add {{.REPO_NAME}} https://grafana.github.io/helm-charts
+      - helm repo update {{.REPO_NAME}}
+
+  deploy:
+    desc: Deploy Grafana using Helm
+    vars:
+      MONITORING_NS: monitoring
+      CHART_NAME: grafana
+      REPO_NAME: grafana
+      RELEASE_NAME: grafana
+    cmds:
+      - helm upgrade --install {{.RELEASE_NAME}} {{.REPO_NAME}}/{{.CHART_NAME}} -n {{.MONITORING_NS}} -f {{.TASKFILE_DIR}}/values.yaml
+
+  clean:
+    desc: Remove Grafana
+    vars:
+      MONITORING_NS: monitoring
+      RELEASE_NAME: grafana
+    cmds:
+      - helm uninstall {{.RELEASE_NAME}} -n {{.MONITORING_NS}} --ignore-not-found
