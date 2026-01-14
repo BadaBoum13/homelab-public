@@ -1,0 +1,13 @@
+apiVersion: grafana.integreatly.org/v1beta1
+kind: GrafanaDashboard
+metadata:
+  name: victoriametrics-vmsingle
+  namespace: monitoring
+spec:
+  folder: "VictoriaMetrics"
+  grafanaCom:
+    id: 10229
+    revision: 48
+  instanceSelector:
+    matchLabels:
+      app: "grafana"

@@ -1,0 +1,13 @@
+apiVersion: grafana.integreatly.org/v1beta1
+kind: GrafanaDashboard
+metadata:
+  name: victorialogs-vlsingle-internal-state
+  namespace: monitoring
+spec:
+  folder: "VictoriaLogs"
+  grafanaCom:
+    id: 24585
+    revision: 1
+  instanceSelector:
+    matchLabels:
+      app: "grafana"
