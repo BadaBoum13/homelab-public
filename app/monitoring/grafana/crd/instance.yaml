@@ -1,0 +1,81 @@
+---
+apiVersion: grafana.integreatly.org/v1beta1
+kind: Grafana
+metadata:
+  name: grafana
+  namespace: monitoring
+  labels:
+    app: grafana
+spec:
+  config:
+    log:
+      mode: console
+    auth:
+      disable_login_form: "false"
+  service:
+    spec:
+      type: ClusterIP
+  ingress:
+    metadata:
+     annotations:
+       kubernetes.io/ingress.class: "traefik"
+       cert-manager.io/cluster-issuer: "cloudflare"
+    spec:
+      ingressClassName: traefik
+      rules:
+        - host: grafana.biduleproofzone.ovh
+          http:
+            paths:
+              - path: /
+                pathType: Prefix
+                backend:
+                  service:
+                    name: grafana-service
+                    port:
+                      number: 3000
+      tls:
+        - secretName: grafana-tls
+          hosts:
+            - grafana.biduleproofzone.ovh
+  persistentVolumeClaim:
+    spec:
+      accessModes:
+        - ReadWriteOnce
+      storageClassName: longhorn-ssd
+      resources:
+        requests:
+          storage: 3Gi
+  deployment:
+    spec:
+      template:
+        spec:
+          containers:
+            - name: grafana
+              readinessProbe:
+                failureThreshold: 5
+                initialDelaySeconds: 30
+                successThreshold: 1
+              livenessProbe:
+                failureThreshold: 5
+                initialDelaySeconds: 30
+                successThreshold: 1
+                timeoutSeconds: 30
+              resources:
+                requests:
+                  cpu: 100m
+                  memory: 128Mi
+                limits:
+                  cpu: 1
+                  memory: 1Gi
+              env:
+                - name: GF_SECURITY_ADMIN_USER
+                  valueFrom:
+                    secretKeyRef:
+                      key: admin-user
+                      name: grafana-admin-secret
+                - name: GF_SECURITY_ADMIN_PASSWORD
+                  valueFrom:
+                    secretKeyRef:
+                      key: admin-password
+                      name: grafana-admin-secret
+  disableDefaultAdminSecret: true
