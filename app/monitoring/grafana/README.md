@@ -1,6 +1,6 @@
 helm repo add grafana https://grafana.github.io/helm-charts
 helm repo update
-helm upgrade --install grafana grafana/grafana -f values.yml -n monitoring
+helm upgrade --install grafana grafana/grafana -f values.yaml -n monitoring
 
 
 values url: https://github.com/grafana/helm-charts/blob/main/charts/grafana/values.yaml

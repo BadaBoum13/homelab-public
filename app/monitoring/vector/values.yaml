@@ -1,0 +1,140 @@
+role: Agent
+
+resources:
+  requests:
+    cpu: 100m
+    memory: 64Mi
+  limits:
+    cpu: 500m
+    memory: 512Mi
+
+# logLevel: "error"
+
+# Vector configuration
+customConfig:
+  data_dir: /vector-data-dir
+  api:
+    enabled: true
+    address: "0.0.0.0:{{ with index .Values.service.ports 0 }}{{ .port }}{{ end }}"
+    playground: false
+
+  # Data sources - collect logs from various sources
+  sources:
+    internal_metrics:
+      type: internal_metrics
+    kubernetes_logs:
+      type: kubernetes_logs
+    
+    # host_logs:
+    #   type: file
+    #   read_from: beginning
+    #   paths:
+    #     - /var/log/messages
+    #     - /var/log/syslog
+
+  transforms:
+
+    normalize_for_victorialogs:
+      type: remap
+      inputs:
+        - kubernetes_logs
+      source: |
+        ._msg = string!(.message)
+
+        temp, _ = parse_json(.message)
+        if temp != null {
+          .json = temp
+        }
+
+        ._time = .timestamp
+        del(.message)
+        del(.timestamp)
+
+    extract_labels:
+      type: remap
+      inputs:
+        - normalize_for_victorialogs
+      source: |
+        .namespace = .kubernetes.namespace_name
+        .pod = .kubernetes.pod_name
+        .container = .kubernetes.container_name
+        .node = .kubernetes.node_name
+
+  # Data sinks - send logs to VictoriaMetrics
+  sinks:
+    victorialogs:
+      type: http
+      inputs:
+        - extract_labels
+      uri: "http://vlsingle-vl-single.monitoring.svc.cluster.local:9428/insert/jsonline"
+      encoding:
+        codec: json
+      framing:
+        method: newline_delimited
+      compression: gzip
+      healthcheck:
+        enabled: false
+      batch:
+        max_events: 200
+        timeout_secs: 5
+      request:
+        concurrency: 4
+        retry_attempts: 10
+        retry_max_duration_secs: 300
+        timeout_secs: 30
+    prom_exporter:
+      type: prometheus_exporter
+      inputs: [internal_metrics]
+      address: 0.0.0.0:9090
+
+# Persistence for buffering logs
+persistence:
+  enabled: true
+  size: 100Mi
+  storageClassName: longhorn-ssd
+
+# Node selection for the DaemonSet
+nodeSelector: {}
+
+podMonitor:
+  enabled: true
+
+service:
+  enabled: true
+  ports:
+  - name: api
+    port: 8686
+    protocol: TCP
+    targetPort: 8686
+
+containerPorts:
+  - name: prom-exporter
+    containerPort: 9090
+    protocol: TCP
+    targetPort: 9090
+
+serviceHeadless:
+  enabled: false
+
+# Tolerations for scheduling on all nodes
+tolerations:
+  - effect: NoSchedule
+    operator: Exists
+  - effect: NoExecute
+    operator: Exists
+
+# Service Account
+serviceAccount:
+  create: true
+  name: vector
+
+# RBAC
+rbac:
+  create: true
+
+# Environment variables
+env:
+  - name: CLUSTER_NAME
+    value: homelab
+  - name: ENV
+    value: prod
