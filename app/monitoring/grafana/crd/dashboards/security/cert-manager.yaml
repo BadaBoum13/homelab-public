@@ -1,10 +1,12 @@
 apiVersion: grafana.integreatly.org/v1beta1
-kind: GrafanaFolder
+kind: GrafanaDashboard
 metadata:
-  name: victoriametrics
+  name: cert-manager
   namespace: monitoring
 spec:
+  folder: "Security"
+  grafanaCom:
+    id: 11001
   instanceSelector:
     matchLabels:
       app: "grafana"
-  title: VictoriaMetrics

@@ -44,7 +44,7 @@ spec:
       storageClassName: longhorn-ssd
       resources:
         requests:
-          storage: 3Gi
+          storage: 500Mi
   deployment:
     spec:
       template:
@@ -52,10 +52,17 @@ spec:
           containers:
             - name: grafana
               readinessProbe:
+                httpGet:
+                  path: /api/health
+                  port: 3000
                 failureThreshold: 5
                 initialDelaySeconds: 30
                 successThreshold: 1
+                timeoutSeconds: 5
               livenessProbe:
+                httpGet:
+                  path: /api/health
+                  port: 3000
                 failureThreshold: 5
                 initialDelaySeconds: 30
                 successThreshold: 1
