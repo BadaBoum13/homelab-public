@@ -8,9 +8,16 @@ spec:
   serviceScrapeSelector: {}
   podScrapeNamespaceSelector: {}
   podScrapeSelector: {}
+  staticScrapeNamespaceSelector: {}
+  staticScrapeSelector: {}
+  scrapeConfigNamespaceSelector: {}
+  scrapeConfigSelector: {}
   nodeScrapeNamespaceSelector: {}
   nodeScrapeSelector: {}
   
+  externalLabels:
+    cluster: home
+
   remoteWrite:
     - url: http://vmsingle-vm-single.monitoring.svc.cluster.local:8429/api/v1/write
 

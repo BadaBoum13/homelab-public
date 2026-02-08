@@ -1,10 +1,12 @@
 apiVersion: grafana.integreatly.org/v1beta1
-kind: GrafanaFolder
+kind: GrafanaDashboard
 metadata:
-  name: victoriametrics
+  name: node-exporter-full
   namespace: monitoring
 spec:
+  folder: "kubernetes"
+  grafanaCom:
+    id: 1860
   instanceSelector:
     matchLabels:
       app: "grafana"
-  title: VictoriaMetrics
