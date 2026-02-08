@@ -32,6 +32,7 @@ csi:
   provisionerReplicaCount: 1
   resizerReplicaCount: 1
   snapshotterReplicaCount: 1
+  kubeletRootDir: /var/lib/rancher/k3s/agent/kubelet
 
 metrics:
   serviceMonitor:
