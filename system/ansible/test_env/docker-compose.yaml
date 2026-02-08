@@ -1,0 +1,40 @@
+services:
+  ubuntu-systemd:
+    build: .
+    container_name: ubuntu_server
+    privileged: true
+    cgroup: host
+    tmpfs:
+      - /run
+      - /run/lock
+    volumes:
+      - /sys/fs/cgroup:/sys/fs/cgroup:rw        # Crucial for systemd
+      - /lib/modules:/lib/modules:ro            # Crucial for k3s kernel modules
+      - /dev/mapper:/dev/mapper                 # Crucial for k3s storage
+      - type: bind                              # Crucial for longhorn
+        source: ./longhorn-data
+        target: /var/lib/longhorn
+        bind:
+          propagation: rshared
+    ports:
+      - "2222:22"
+      - "6443:6443" # For kubectl (Kubernetes API)
+      - "80:80"     # Optional: For web traffic (Ingress)
+      - "443:443"   # Optional: For secure web traffic (Ingress)
+    stop_signal: SIGRTMIN+3
+    networks:
+      static-network:
+        ipv4_address: 172.20.0.10
+
+volumes:
+  longhorn-data:
+    driver: local
+
+networks:
+  static-network:
+    driver: bridge
+    ipam:
+      config:
+        - subnet: 172.20.0.0/16
+
+# need to run : sudo mount --make-rshared /
