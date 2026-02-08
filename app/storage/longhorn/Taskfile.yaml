@@ -1,0 +1,35 @@
+---
+version: '3'
+
+tasks:
+  default:
+    desc: Deploy longhorn
+    cmds:
+      - task: deploy
+
+  repos:
+    desc: Add longhorn Helm repository
+    vars:
+      REPO_NAME: longhorn
+    cmds:
+      - helm repo add {{.REPO_NAME}} https://charts.longhorn.io
+      - helm repo update {{.REPO_NAME}}
+
+  deploy:
+    desc: Deploy longhorn using Helm
+    vars:
+      NAMESPACE: longhorn-system 
+      CHART_NAME: longhorn
+      REPO_NAME: longhorn
+      RELEASE_NAME: longhorn
+    cmds:
+      - helm upgrade --install {{.RELEASE_NAME}} {{.REPO_NAME}}/{{.CHART_NAME}} -n {{.NAMESPACE}} --create-namespace -f {{.TASKFILE_DIR}}/values.yaml
+      - kubectl apply -f {{.TASKFILE_DIR}}/crd
+
+  clean:
+    desc: Remove longhorn
+    vars:
+      NAMESPACE: longhorn-system 
+      RELEASE_NAME: longhorn
+    cmds:
+      - helm uninstall {{.RELEASE_NAME}} -n {{.NAMESPACE}} --ignore-not-found
