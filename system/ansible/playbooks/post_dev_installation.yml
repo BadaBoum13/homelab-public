@@ -1,0 +1,32 @@
+---
+- name: Setup local kubectl access
+  hosts: node0
+  gather_facts: no
+  vars:
+    local_kubeconfig_path: "{{ lookup('env', 'HOME') }}/.kube/config-k3s"
+    fixed_container_ip: "172.20.0.10"
+
+  tasks:
+    - name: Read k3s.yaml from container
+      ansible.builtin.slurp:
+        src: /etc/rancher/k3s/k3s.yaml
+      register: k3s_yaml_encoded
+      become: yes
+
+    - name: Create local .kube directory if it doesn't exist
+      delegate_to: localhost
+      ansible.builtin.file:
+        path: "{{ lookup('env', 'HOME') }}/.kube"
+        state: directory
+        mode: '0700'
+
+    - name: Decode and save Kubeconfig to local machine
+      delegate_to: localhost
+      ansible.builtin.copy:
+        content: "{{ k3s_yaml_encoded['content'] | b64decode | replace('127.0.0.1', fixed_container_ip) }}"
+        dest: "{{ local_kubeconfig_path }}"
+        mode: '0600'
+
+    - name: Reminder to set KUBECONFIG environment variable
+      ansible.builtin.debug:
+        msg: "Run this command manually: export KUBECONFIG={{ local_kubeconfig_path }}"
