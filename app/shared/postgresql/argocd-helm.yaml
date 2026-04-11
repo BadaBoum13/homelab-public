@@ -1,0 +1,28 @@
+apiVersion: argoproj.io/v1alpha1
+kind: Application
+metadata:
+  name: postgresql
+  namespace: argocd
+  annotations:
+    argocd.argoproj.io/sync-wave: "2"
+spec:
+  project: default
+  sources:
+    - repoURL: oci://registry-1.docker.io/bitnamicharts
+      chart: postgresql
+      targetRevision: "*"
+      helm:
+        valueFiles:
+          - $values/app/shared/postgresql/values.yml
+    - repoURL: https://github.com/BadaBoum13/homelab-public.git
+      targetRevision: HEAD
+      ref: values
+  destination:
+    server: https://kubernetes.default.svc
+    namespace: shared
+  syncPolicy:
+    automated:
+      prune: true
+      selfHeal: true
+    syncOptions:
+      - CreateNamespace=true
