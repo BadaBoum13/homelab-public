@@ -55,23 +55,21 @@ controller:
       cpu: 250m
       memory: 256Mi
 
+configs:
+  cm:
+    url: https://argocd.biduleproofzone.ovh
+    oidc.config: |
+      name: Auth0
+      issuer: $oidc.auth0.issuer
+      clientID: $oidc.auth0.clientID
+      clientSecret: $oidc.auth0.clientSecret
+      requestedScopes:
+        - openid
+        - profile
+        - email
+
 dex:
-  enabled: false # TODO: configure SSO
-  metrics:
-    enabled: true
-    serviceMonitor:
-      enabled: true
-  resources:
-    limits:
-      cpu: 50m
-      memory: 64Mi
-    requests:
-      cpu: 10m
-      memory: 32Mi
-  livenessProbe:
-    enabled: true
-  readinessProbe:
-    enabled: true
+  enabled: false
 
 redis:
   enabled: true

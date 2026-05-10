@@ -47,9 +47,26 @@ All applications are configured with `automated.prune: true` and `automated.self
 - **URL**: `https://argocd.biduleproofzone.ovh`
 - **Credentials**: managed via Kubernetes secret in the `argocd` namespace
 
+## SSO
+
+ArgoCD uses Auth0 as a direct OIDC provider (Dex is disabled).
+
+**Auth0 Application settings** (set in the Auth0 dashboard):
+| Setting | Value |
+|---|---|
+| Allowed Callback URLs | `https://argocd.biduleproofzone.ovh/auth/callback` |
+| Allowed Logout URLs | `https://argocd.biduleproofzone.ovh` |
+
+**Inject credentials** (one-time, not committed to git):
+```bash
+kubectl -n argocd patch secret argocd-secret \
+  -p '{"stringData": {"oidc.auth0.issuer": "https//auth0.com", "oidc.auth0.clientID": "YOUR_CLIENT_ID", "oidc.auth0.clientSecret": "YOUR_CLIENT_SECRET"}}'
+```
+
+Update `values.yml` placeholders `YOUR_TENANT` and `YOUR_ADMIN_EMAIL` before deploying.
+
 ## TODO
 
-- Add SSO
 - Add repository integration
 
 ## Resources
