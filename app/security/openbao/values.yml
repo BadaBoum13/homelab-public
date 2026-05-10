@@ -1,0 +1,205 @@
+global:
+  enabled: true
+
+injector:
+  enabled: true
+  replicas: 1
+  resources:
+    requests:
+      cpu: 50m
+      memory: 64Mi
+    limits:
+      cpu: 250m
+      memory: 128Mi
+
+server:
+  image:
+    repository: quay.io/openbao/openbao-hsm  # image CGO-enabled
+    tag: "2.x.x"
+
+  # SoftHSM2 confirguration
+  volumes:
+    - name: softhsm-lib
+      hostPath:
+        path: /usr/lib/x86_64-linux-gnu/softhsm
+    - name: softhsm-config
+      hostPath:
+        path: /etc/softhsm2.conf
+    - name: softhsm-tokens
+      hostPath:
+        path: /var/lib/softhsm/tokens
+
+  volumeMounts:
+    - name: softhsm-lib
+      mountPath: /usr/lib/softhsm
+    - name: softhsm-config
+      mountPath: /etc/softhsm2.conf
+      subPath: softhsm2.conf
+    - name: softhsm-tokens
+      mountPath: /var/lib/softhsm/tokens
+
+  extraSecretEnvironmentVars:
+    - envName: BAO_HSM_PIN
+      secretName: openbao-hsm-pin
+      secretKey: pin
+
+  standalone:
+    config: |
+      ui = true
+
+      listener "tcp" {
+        tls_disable     = 1
+        address         = "[::]:8200"
+        cluster_address = "[::]:8201"
+        telemetry {
+          unauthenticated_metrics_access = true
+        }
+      }
+
+      storage "file" {
+        path = "/openbao/data"
+      }
+
+      seal "pkcs11" {
+        lib         = "/usr/lib/softhsm/libsofthsm2.so"
+        token_label = "openbao-token"
+        key_label   = "openbao-unseal-key"
+        mechanism   = "0x1087"  # CKM_AES_GCM
+        # pin injecté via env BAO_HSM_PIN
+      }
+
+      telemetry {
+        prometheus_retention_time      = "30s"
+        disable_hostname               = true
+        unauthenticated_metrics_access = true
+      }
+
+  resources:
+    requests:
+      cpu: 100m
+      memory: 128Mi
+    limits:
+      cpu: 500m
+      memory: 256Mi
+
+  dataStorage:
+    enabled: true
+    size: 1Gi
+    storageClass: longhorn
+    accessMode: ReadWriteOnce
+
+  logLevel: "info"
+  logFormat: "json"
+
+  readinessProbe:
+    enabled: true
+    path: "/v1/sys/health?standbyok=true&sealedcode=204&uninitcode=204"
+  livenessProbe:
+    enabled: true
+    path: "/v1/sys/health?standbyok=true"
+    initialDelaySeconds: 60
+
+  serviceAccount:
+    create: true
+
+  service:
+    enabled: true
+    type: ClusterIP
+    port: 8200
+
+  ui:
+    enabled: true
+    serviceType: ClusterIP
+
+  ingress:
+    enabled: true
+    ingressClassName: traefik   # ou nginx selon ton K3s
+    hosts:
+      - host: openbao.home.lab  # remplace par ton domaine
+        paths:
+          - /
+    tls: []
+    # tls:
+    #   - secretName: openbao-tls
+    #     hosts:
+    #       - openbao.home.lab
+
+  ha:
+    enabled: false
+
+ui:
+  enabled: true
+  serviceType: ClusterIP
+
+serverTelemetry:
+  # Enable support for the Prometheus Operator. If authorization is not required for
+  # OpenBao's metrics endpoint, the following OpenBao server `telemetry{}` config must be included
+  # in the `listener "tcp"{}` stanza
+  #  telemetry {
+  #    unauthenticated_metrics_access = "true"
+  #  }
+  #
+  # See the `standalone.config` for a more complete example of this.
+  #
+  # In addition, a top level `telemetry{}` stanza must also be included in the OpenBao configuration:
+  #
+  # example:
+  #  telemetry {
+  #    prometheus_retention_time = "30s"
+  #    disable_hostname = true
+  #  }
+  #
+  # Configuration for monitoring the OpenBao server.
+  serviceMonitor:
+    # Enable deployment of the OpenBao Server ServiceMonitor CustomResource.
+    enabled: true
+
+    # Selector labels to add to the ServiceMonitor.
+    # When empty, defaults to:
+    #  release: prometheus
+    selectors: {}
+
+    # -- Port which Prometheus uses when scraping metrics. If empty will use `openbao.scheme` helper for its value
+    port: ""
+
+    # -- scheme to use when Prometheus scrapes metrics. If empty will use `openbao.scheme` helper for its value
+    scheme: ""
+
+    interval: 30s
+    scrapeTimeout: 10s
+
+  prometheusRules:
+    # The Prometheus operator *must* be installed before enabling this feature,
+    # if not the chart will fail to install due to missing CustomResourceDefinitions
+    # provided by the operator.
+
+    # Deploy the PrometheusRule custom resource for AlertManager based alerts.
+    # Requires that AlertManager is properly deployed.
+    enabled: false
+
+    # Selector labels to add to the PrometheusRules.
+    # When empty, defaults to:
+    #  release: prometheus
+    selectors: {}
+
+    # Some example rules.
+    rules: []
+    #  - alert: vault-HighResponseTime
+    #    annotations:
+    #      message: The response time of OpenBao is over 500ms on average over the last 5 minutes.
+    #    expr: vault_core_handle_request{quantile="0.5", namespace="mynamespace"} > 500
+    #    for: 5m
+    #    labels:
+    #      severity: warning
+    #  - alert: vault-HighResponseTime
+    #    annotations:
+    #      message: The response time of OpenBao is over 1s on average over the last 10 minutes.
+    #    expr: vault_core_handle_request{quantile="0.5", namespace="mynamespace"} > 1000
+    #    for: 10m
+    #    labels:
+    #      severity: critical
+
+  grafanaDashboard:
+    # Enable deployment of the OpenBao Grafana dashboard.
+    # https://grafana.com/grafana/dashboards/23725-openbao
+    enabled: false
