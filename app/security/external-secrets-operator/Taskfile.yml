@@ -1,0 +1,35 @@
+---
+version: '3'
+
+tasks:
+  default:
+    desc: Deploy External Secrets Operator
+    cmds:
+      - task: deploy
+
+  repos:
+    desc: Add External Secrets Helm repository
+    vars:
+      REPO_NAME: external-secrets
+    cmds:
+      - helm repo add {{.REPO_NAME}} https://charts.external-secrets.io
+      - helm repo update {{.REPO_NAME}}
+
+  deploy:
+    desc: Deploy External Secrets Operator using Helm
+    vars:
+      NAMESPACE: security
+      CHART_NAME: external-secrets
+      REPO_NAME: external-secrets
+      RELEASE_NAME: external-secrets-operator
+    cmds:
+      - helm upgrade --install {{.RELEASE_NAME}} {{.REPO_NAME}}/{{.CHART_NAME}} -n {{.NAMESPACE}} -f {{.TASKFILE_DIR}}/values.yml
+      - kubectl apply -f {{.TASKFILE_DIR}}/cluster-secret-store.yml
+
+  clean:
+    desc: Remove External Secrets Operator
+    vars:
+      NAMESPACE: security
+      RELEASE_NAME: external-secrets-operator
+    cmds:
+      - helm uninstall {{.RELEASE_NAME}} -n {{.NAMESPACE}} --ignore-not-found

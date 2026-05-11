@@ -14,8 +14,8 @@ injector:
 
 server:
   image:
-    repository: quay.io/openbao/openbao-hsm  # image CGO-enabled
-    tag: "2.x.x"
+    repository: quay.io/openbao/openbao-hsm
+    tag: "2.5"
 
   # SoftHSM2 confirguration
   volumes:

@@ -1,0 +1,34 @@
+---
+version: '3'
+
+tasks:
+  default:
+    desc: Deploy OpenBao
+    cmds:
+      - task: deploy
+
+  repos:
+    desc: Add OpenBao Helm repository
+    vars:
+      REPO_NAME: openbao
+    cmds:
+      - helm repo add {{.REPO_NAME}} https://openbao.github.io/openbao-helm
+      - helm repo update {{.REPO_NAME}}
+
+  deploy:
+    desc: Deploy OpenBao using Helm
+    vars:
+      NAMESPACE: openbao
+      CHART_NAME: openbao
+      REPO_NAME: openbao
+      RELEASE_NAME: openbao
+    cmds:
+      - helm upgrade --install {{.RELEASE_NAME}} {{.REPO_NAME}}/{{.CHART_NAME}} -n {{.NAMESPACE}} -f {{.TASKFILE_DIR}}/values.yml  --create-namespace
+
+  clean:
+    desc: Remove OpenBao
+    vars:
+      NAMESPACE: openbao
+      RELEASE_NAME: openbao
+    cmds:
+      - helm uninstall {{.RELEASE_NAME}} -n {{.NAMESPACE}} --ignore-not-found
