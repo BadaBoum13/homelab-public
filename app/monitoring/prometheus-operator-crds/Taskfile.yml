@@ -10,16 +10,16 @@ tasks:
   deploy:
     desc: Deploy Prometheus Operator CRDs using Helm
     vars:
-      MONITORING_NS: monitoring
+      NAMESPACE: monitoring
       REPO_NAME: oci://ghcr.io/prometheus-community/charts/prometheus-operator-crds
       RELEASE_NAME: prometheus-operator-crds
     cmds:
-      - helm upgrade --install {{.RELEASE_NAME}} {{.REPO_NAME}} -n {{.MONITORING_NS}}
+      - helm upgrade --install {{.RELEASE_NAME}} {{.REPO_NAME}} -n {{.NAMESPACE}} --create-namespace
 
   clean:
     desc: Remove Prometheus Operator CRDs
     vars:
-      MONITORING_NS: monitoring
+      NAMESPACE: monitoring
       RELEASE_NAME: prometheus-operator-crds
     cmds:
-      - helm uninstall {{.RELEASE_NAME}} -n {{.MONITORING_NS}} --ignore-not-found
+      - helm uninstall {{.RELEASE_NAME}} -n {{.NAMESPACE}} --ignore-not-found

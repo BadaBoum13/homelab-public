@@ -1,0 +1,27 @@
+---
+version: '3'
+
+includes:
+  postgresql: ./postgresql
+
+tasks:
+  default:
+    desc: Deploy all shared components
+    cmds:
+      - task: namespace
+      - task: deploy
+
+  namespace:
+    desc: Create shared namespace
+    cmds:
+      - kubectl create namespace shared --dry-run=client -o yaml | kubectl apply -f -
+
+  deploy:
+    desc: Deploy all shared components
+    cmds:
+      - task: postgresql:deploy
+
+  clean:
+    desc: Remove all shared components
+    cmds:
+      - task: postgresql:clean

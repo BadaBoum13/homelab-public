@@ -1,0 +1,33 @@
+---
+version: '3'
+
+includes:
+  argocd: ./argoCD
+
+tasks:
+  default:
+    desc: Deploy all CD components
+    cmds:
+      - task: namespace
+      - task: repos
+      - task: deploy
+
+  namespace:
+    desc: Create argocd namespace
+    cmds:
+      - kubectl create namespace argocd --dry-run=client -o yaml | kubectl apply -f -
+
+  repos:
+    desc: Add/update all Helm repositories
+    cmds:
+      - task: argocd:repos
+
+  deploy:
+    desc: Deploy all CD components
+    cmds:
+      - task: argocd:deploy
+
+  clean:
+    desc: Remove all CD components
+    cmds:
+      - task: argocd:clean

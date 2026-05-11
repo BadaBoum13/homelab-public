@@ -1,0 +1,44 @@
+---
+version: '3'
+
+includes:
+  monitoring: ./monitoring
+  security: ./security
+  shared: ./shared
+  storage: ./storage
+  cd: ./CD
+
+tasks:
+  default:
+    desc: Deploy all components
+    cmds:
+      - task: repos
+      - task: deploy
+
+  repos:
+    desc: Add/update all Helm repositories
+    cmds:
+      - task: monitoring:repos
+      - task: security:repos
+      - task: storage:repos
+
+  deploy:
+    desc: Deploy all components in dependency order
+    cmds:
+      - task: storage:namespace
+      - task: storage:longhorn:deploy
+      - task: security:namespace
+      - task: security:deploy
+      - task: shared:namespace
+      - task: shared:deploy
+      - task: storage:nextcloud:deploy
+      - task: monitoring:deploy
+
+  clean:
+    desc: Remove all components in reverse dependency order
+    cmds:
+      - task: monitoring:clean
+      - task: storage:nextcloud:clean
+      - task: shared:clean
+      - task: security:clean
+      - task: storage:longhorn:clean

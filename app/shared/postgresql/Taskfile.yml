@@ -1,0 +1,25 @@
+---
+version: '3'
+
+tasks:
+  default:
+    desc: Deploy PostgreSQL
+    cmds:
+      - task: deploy
+
+  deploy:
+    desc: Deploy PostgreSQL using Helm
+    vars:
+      NAMESPACE: shared
+      REPO_NAME: oci://registry-1.docker.io/bitnamicharts/postgresql
+      RELEASE_NAME: postgresql
+    cmds:
+      - helm upgrade --install {{.RELEASE_NAME}} {{.REPO_NAME}} -n {{.NAMESPACE}} -f {{.TASKFILE_DIR}}/values.yml
+
+  clean:
+    desc: Remove PostgreSQL
+    vars:
+      NAMESPACE: shared
+      RELEASE_NAME: postgresql
+    cmds:
+      - helm uninstall {{.RELEASE_NAME}} -n {{.NAMESPACE}} --ignore-not-found

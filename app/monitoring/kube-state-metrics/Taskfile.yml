@@ -10,16 +10,16 @@ tasks:
   deploy:
     desc: Deploy kube-state-metrics using Helm
     vars:
-      MONITORING_NS: monitoring
+      NAMESPACE: monitoring
       REPO_NAME: oci://ghcr.io/prometheus-community/charts/kube-state-metrics
       RELEASE_NAME: kube-state-metrics
     cmds:
-      - helm upgrade --install {{.RELEASE_NAME}} {{.REPO_NAME}} -n {{.MONITORING_NS}} -f {{.TASKFILE_DIR}}/values.yaml
+      - helm upgrade --install {{.RELEASE_NAME}} {{.REPO_NAME}} -n {{.NAMESPACE}} -f {{.TASKFILE_DIR}}/values.yaml
 
   clean:
     desc: Remove kube-state-metrics
     vars:
-      MONITORING_NS: monitoring
+      NAMESPACE: monitoring
       RELEASE_NAME: kube-state-metrics
     cmds:
-      - helm uninstall {{.RELEASE_NAME}} -n {{.MONITORING_NS}} --ignore-not-found
+      - helm uninstall {{.RELEASE_NAME}} -n {{.NAMESPACE}} --ignore-not-found

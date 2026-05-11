@@ -1,0 +1,34 @@
+---
+version: '3'
+
+tasks:
+  default:
+    desc: Deploy Nextcloud
+    cmds:
+      - task: deploy
+
+  repos:
+    desc: Add Nextcloud Helm repository
+    vars:
+      REPO_NAME: nextcloud
+    cmds:
+      - helm repo add {{.REPO_NAME}} https://nextcloud.github.io/helm/
+      - helm repo update {{.REPO_NAME}}
+
+  deploy:
+    desc: Deploy Nextcloud using Helm
+    vars:
+      NAMESPACE: nextcloud
+      CHART_NAME: nextcloud
+      REPO_NAME: nextcloud
+      RELEASE_NAME: nextcloud
+    cmds:
+      - helm upgrade --install {{.RELEASE_NAME}} {{.REPO_NAME}}/{{.CHART_NAME}} -n {{.NAMESPACE}} -f {{.TASKFILE_DIR}}/values.yml
+
+  clean:
+    desc: Remove Nextcloud
+    vars:
+      NAMESPACE: nextcloud
+      RELEASE_NAME: nextcloud
+    cmds:
+      - helm uninstall {{.RELEASE_NAME}} -n {{.NAMESPACE}} --ignore-not-found
