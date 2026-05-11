@@ -1,0 +1,45 @@
+---
+version: '3'
+
+includes:
+  openbao: ./openbao
+  vault-config-operator: ./vault-config-operator
+  cert-manager: ./cert-manager
+  external-secrets-operator: ./external-secrets-operator
+
+tasks:
+  default:
+    desc: Deploy all security components
+    cmds:
+      - task: namespace
+      - task: repos
+      - task: deploy
+
+  namespace:
+    desc: Create security namespaces
+    cmds:
+      - kubectl create namespace security --dry-run=client -o yaml | kubectl apply -f -
+      - kubectl create namespace openbao --dry-run=client -o yaml | kubectl apply -f -
+
+  repos:
+    desc: Add/update all Helm repositories
+    cmds:
+      - task: openbao:repos
+      - task: vault-config-operator:repos
+      - task: external-secrets-operator:repos
+
+  deploy:
+    desc: Deploy all security components
+    cmds:
+      - task: openbao:deploy
+      - task: vault-config-operator:deploy
+      - task: cert-manager:deploy
+      - task: external-secrets-operator:deploy
+
+  clean:
+    desc: Remove all security components
+    cmds:
+      - task: external-secrets-operator:clean
+      - task: cert-manager:clean
+      - task: vault-config-operator:clean
+      - task: openbao:clean

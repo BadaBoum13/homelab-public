@@ -18,17 +18,17 @@ tasks:
   deploy:
     desc: Deploy Grafana Operator using Helm
     vars:
-      MONITORING_NS: monitoring
+      NAMESPACE: monitoring
       CHART_NAME: grafana-operator
       REPO_NAME: grafana
       RELEASE_NAME: grafana-operator
     cmds:
-      - helm upgrade --install {{.RELEASE_NAME}} {{.REPO_NAME}}/{{.CHART_NAME}} -n {{.MONITORING_NS}} -f {{.TASKFILE_DIR}}/values.yaml
+      - helm upgrade --install {{.RELEASE_NAME}} {{.REPO_NAME}}/{{.CHART_NAME}} -n {{.NAMESPACE}} -f {{.TASKFILE_DIR}}/values.yaml
 
   clean:
     desc: Remove Grafana Operator
     vars:
-      MONITORING_NS: monitoring
+      NAMESPACE: monitoring
       RELEASE_NAME: grafana-operator
     cmds:
-      - helm uninstall {{.RELEASE_NAME}} -n {{.MONITORING_NS}} --ignore-not-found
+      - helm uninstall {{.RELEASE_NAME}} -n {{.NAMESPACE}} --ignore-not-found

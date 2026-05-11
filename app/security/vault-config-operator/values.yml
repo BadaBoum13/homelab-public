@@ -1,0 +1,14 @@
+vaultAddress: "http://openbao.openbao.svc.cluster.local:8200"
+
+resources:
+  requests:
+    cpu: 10m
+    memory: 64Mi
+  limits:
+    cpu: 200m
+    memory: 128Mi
+
+enableCertManager: false
+
+monitoring:
+  enabled: true

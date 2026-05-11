@@ -19,9 +19,9 @@ tasks:
   namespace:
     desc: Create monitoring namespace
     vars:
-      MONITORING_NS: monitoring
+      NAMESPACE: monitoring
     cmds:
-      - kubectl create namespace {{.MONITORING_NS}} --dry-run=client -o yaml | kubectl apply -f -
+      - kubectl create namespace {{.NAMESPACE}} --dry-run=client -o yaml | kubectl apply -f -
 
   github:
     desc: register to github
