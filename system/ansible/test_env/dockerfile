@@ -1,5 +1,5 @@
 # Specialized for your Ubuntu + k3s lab
-FROM ubuntu:26.04
+FROM ubuntu:resolute
 
 ENV DEBIAN_FRONTEND=noninteractive
 

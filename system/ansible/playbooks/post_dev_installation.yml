@@ -4,7 +4,8 @@
   gather_facts: no
   vars:
     local_kubeconfig_path: "{{ lookup('env', 'HOME') }}/.kube/config-k3s"
-    fixed_container_ip: "172.20.0.10"
+    fixed_container_ip: "127.0.0.1"
+    # fixed_container_ip: "172.20.0.10"
 
   tasks:
     - name: Read k3s.yaml from container
