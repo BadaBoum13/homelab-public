@@ -119,3 +119,102 @@
         name: ssh
         state: restarted
 
+- name: Bootstrap SoftHSM2
+  hosts: amd64
+  become: true
+  
+  vars:
+    hsm_token_label: "openbao-token"
+    hsm_key_label: "openbao-unseal-key"
+    hsm_key_id: "01"
+    hsm_module_path: "/usr/lib/x86_64-linux-gnu/softhsm/libsofthsm2.so"
+    hsm_token_backup_dest: "/root/softhsm2-backup.tar.gz"
+
+  tasks:
+    - name: Install SoftHSM2 and OpenSC
+      ansible.builtin.apt:
+        name:
+          - softhsm2
+          - opensc
+        state: present
+        update_cache: yes
+      when: enable_hsm | default(false)
+
+    - name: Create /etc/softhsm2.conf for OpenBao pod hostPath mount
+      ansible.builtin.copy:
+        dest: /etc/softhsm2.conf
+        mode: "0644"
+        content: |
+          directories.tokendir = /var/lib/softhsm/tokens/
+          objectstore.backend = file
+          log.level = ERROR
+          slots.removable = false
+      when: enable_hsm | default(false)
+
+    - name: Check if HSM token already initialized
+      ansible.builtin.command: softhsm2-util --show-slots
+      register: hsm_slots
+      changed_when: false
+      when: enable_hsm | default(false)
+
+    - name: Initialize SoftHSM2 token
+      ansible.builtin.command: >
+        softhsm2-util --init-token --free
+        --label "{{ hsm_token_label }}"
+        --pin "{{ hsm_pin }}"
+        --so-pin "{{ hsm_so_pin }}"
+      when:
+        - enable_hsm | default(false)
+        - hsm_token_label not in hsm_slots.stdout
+
+    - name: Check if unseal key already exists
+      ansible.builtin.command: >
+        pkcs11-tool
+        --module "{{ hsm_module_path }}"
+        --token-label "{{ hsm_token_label }}"
+        --login --pin "{{ hsm_pin }}"
+        --list-objects
+      register: hsm_objects
+      changed_when: false
+      when: enable_hsm | default(false)
+
+    - name: Generate AES-256 unseal key in HSM token
+      ansible.builtin.command: >
+        pkcs11-tool
+        --module "{{ hsm_module_path }}"
+        --token-label "{{ hsm_token_label }}"
+        --login --pin "{{ hsm_pin }}"
+        --keygen --key-type aes:32
+        --label "{{ hsm_key_label }}"
+        --id {{ hsm_key_id }}
+      when:
+        - enable_hsm | default(false)
+        - hsm_key_label not in hsm_objects.stdout
+
+    - name: Generate AES-256 HMAC key in HSM token
+      ansible.builtin.command: >
+        pkcs11-tool
+        --module "{{ hsm_module_path }}"
+        --token-label "{{ hsm_token_label }}"
+        --login --pin "{{ hsm_pin }}"
+        --keygen --key-type aes:32
+        --label "{{ hsm_hmac_key_label }}"
+        --id {{ hsm_hmac_key_id }}
+      when:
+        - enable_hsm | default(false)
+        - hsm_key_label not in hsm_objects.stdout
+
+    - name: Set permissions on SoftHSM2 token directory for container access
+      ansible.builtin.file:
+        path: /var/lib/softhsm/tokens
+        mode: "0755"
+        recurse: yes
+      when: enable_hsm | default(false)
+
+    - name: Back up SoftHSM2 token directory
+      ansible.builtin.archive:
+        path: /var/lib/softhsm/tokens/
+        dest: "{{ hsm_token_backup_dest }}"
+        format: gz
+        mode: "0600"
+      when: enable_hsm | default(false)

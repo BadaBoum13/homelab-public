@@ -1,5 +1,6 @@
 global:
   enabled: true
+  namespace: "security"
 
 injector:
   enabled: true
@@ -13,30 +14,46 @@ injector:
       memory: 128Mi
 
 server:
-  image:
-    repository: quay.io/openbao/openbao-hsm
-    tag: "2.5"
+  affinity: {}
+    # podAntiAffinity:
+    #   requiredDuringSchedulingIgnoredDuringExecution:
+    #     - labelSelector:
+    #         matchLabels:
+    #           app.kubernetes.io/name: {{ template "openbao.name" . }}
+    #           app.kubernetes.io/instance: "{{ .Release.Name }}"
+    #           component: server
+    #       topologyKey: kubernetes.io/hostname
 
-  # SoftHSM2 confirguration
+  image:
+    # registry: quay.io
+    # repository: openbao/openbao-hsm
+    # tag: "2.5"
+    registry: ghcr.io
+    repository: badaboum13/openbao-hsm
+    tag: "pr-1@sha256:4c5c11216de45c30e8819976e5b7fe592c591c3a5cf8e769537f5007ed49c0ca"
+
+
+  # SoftHSM2 — the UBI image is glibc-based, same as the Ubuntu hosts,
+  # so the host's libsofthsm2.so can be mounted directly.
   volumes:
-    - name: softhsm-lib
-      hostPath:
-        path: /usr/lib/x86_64-linux-gnu/softhsm
     - name: softhsm-config
       hostPath:
         path: /etc/softhsm2.conf
+        type: File
     - name: softhsm-tokens
       hostPath:
         path: /var/lib/softhsm/tokens
+        type: Directory
 
   volumeMounts:
-    - name: softhsm-lib
-      mountPath: /usr/lib/softhsm
     - name: softhsm-config
       mountPath: /etc/softhsm2.conf
-      subPath: softhsm2.conf
     - name: softhsm-tokens
       mountPath: /var/lib/softhsm/tokens
+
+  extraEnvironmentVars:
+    SOFTHSM2_CONF: /etc/softhsm2.conf
+    LD_LIBRARY_PATH: /usr/lib/softhsm
 
   extraSecretEnvironmentVars:
     - envName: BAO_HSM_PIN
@@ -61,18 +78,22 @@ server:
       }
 
       seal "pkcs11" {
-        lib         = "/usr/lib/softhsm/libsofthsm2.so"
-        token_label = "openbao-token"
-        key_label   = "openbao-unseal-key"
-        mechanism   = "0x1087"  # CKM_AES_GCM
-        # pin injecté via env BAO_HSM_PIN
+        lib             = "/usr/lib/softhsm/libsofthsm2.so"
+        token_label     = "openbao-token"
+        key_label       = "openbao-unseal-key"
+        mechanism       = "CKM_RSA_PKCS_OAEP"
+        hmac_key_label  = "bao-hmac-key"
+        rsa_oaep_hash  = "sha1"
       }
 
       telemetry {
         prometheus_retention_time      = "30s"
         disable_hostname               = true
-        unauthenticated_metrics_access = true
       }
+
+  # securityContext:
+  #   runAsUser: 994
+    # runAsGroup: 0
 
   resources:
     requests:
@@ -83,7 +104,7 @@ server:
       memory: 256Mi
 
   dataStorage:
-    enabled: true
+    enabled: false
     size: 1Gi
     storageClass: longhorn
     accessMode: ReadWriteOnce
@@ -92,10 +113,10 @@ server:
   logFormat: "json"
 
   readinessProbe:
-    enabled: true
+    enabled: false
     path: "/v1/sys/health?standbyok=true&sealedcode=204&uninitcode=204"
   livenessProbe:
-    enabled: true
+    enabled: false
     path: "/v1/sys/health?standbyok=true"
     initialDelaySeconds: 60
 
