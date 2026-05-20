@@ -25,12 +25,9 @@ server:
     #       topologyKey: kubernetes.io/hostname
 
   image:
-    # registry: quay.io
-    # repository: openbao/openbao-hsm
-    # tag: "2.5"
     registry: ghcr.io
     repository: badaboum13/openbao-hsm
-    tag: "pr-1@sha256:4c5c11216de45c30e8819976e5b7fe592c591c3a5cf8e769537f5007ed49c0ca"
+    tag: "1.0"
 
 
   # SoftHSM2 — the UBI image is glibc-based, same as the Ubuntu hosts,
@@ -64,6 +61,10 @@ server:
     config: |
       ui = true
 
+      # External URL (Traefik terminates TLS); needed so OIDC builds correct
+      # redirect/callback URLs for the Auth0 login flow.
+      api_addr = "https://openbao.biduleproofzone.ovh"
+
       listener "tcp" {
         tls_disable     = 1
         address         = "[::]:8200"
@@ -82,18 +83,23 @@ server:
         token_label     = "openbao-token"
         key_label       = "openbao-unseal-key"
         mechanism       = "CKM_RSA_PKCS_OAEP"
-        hmac_key_label  = "bao-hmac-key"
-        rsa_oaep_hash  = "sha1"
+        hmac_key_label  = "openbao-hmac-key"
+        rsa_oaep_hash   = "sha1"
       }
 
       telemetry {
         prometheus_retention_time      = "30s"
         disable_hostname               = true
       }
-
-  # securityContext:
-  #   runAsUser: 994
-    # runAsGroup: 0
+  # Settings for the statefulSet used to run OpenBao.
+  statefulSet:
+    annotations: {}
+    securityContext:
+      pod:
+        runAsNonRoot: true
+        runAsUser: 100 # UID from the custom image
+        runAsGroup: 10000
+        fsGroup: 10000
 
   resources:
     requests:
@@ -105,18 +111,18 @@ server:
 
   dataStorage:
     enabled: false
-    size: 1Gi
+    size: 500Mi
     storageClass: longhorn
     accessMode: ReadWriteOnce
 
-  logLevel: "info"
+  logLevel: "error"
   logFormat: "json"
 
   readinessProbe:
-    enabled: false
+    enabled: true
     path: "/v1/sys/health?standbyok=true&sealedcode=204&uninitcode=204"
   livenessProbe:
-    enabled: false
+    enabled: true
     path: "/v1/sys/health?standbyok=true"
     initialDelaySeconds: 60
 
@@ -134,16 +140,17 @@ server:
 
   ingress:
     enabled: true
-    ingressClassName: traefik   # ou nginx selon ton K3s
+    ingressClassName: traefik
+    annotations:
+      cert-manager.io/cluster-issuer: "cloudflare"
     hosts:
-      - host: openbao.home.lab  # remplace par ton domaine
+      - host: openbao.biduleproofzone.ovh
         paths:
           - /
-    tls: []
-    # tls:
-    #   - secretName: openbao-tls
-    #     hosts:
-    #       - openbao.home.lab
+    tls:
+      - secretName: openbao-tls
+        hosts:
+          - openbao.biduleproofzone.ovh
 
   ha:
     enabled: false
