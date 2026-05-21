@@ -24,7 +24,7 @@ tasks:
       RELEASE_NAME: external-secrets-operator
     cmds:
       - helm upgrade --install {{.RELEASE_NAME}} {{.REPO_NAME}}/{{.CHART_NAME}} -n {{.NAMESPACE}} -f {{.TASKFILE_DIR}}/values.yml
-      - kubectl apply -f {{.TASKFILE_DIR}}/cluster-secret-store.yml
+      - kubectl apply -f {{.TASKFILE_DIR}}/crd
 
   clean:
     desc: Remove External Secrets Operator

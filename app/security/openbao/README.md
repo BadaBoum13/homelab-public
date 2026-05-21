@@ -75,7 +75,7 @@ helm upgrade --install openbao openbao/openbao \
 | Seal type | PKCS11 (SoftHSM2, CKM_AES_GCM `0x1087`) |
 | HSM PIN source | Secret `openbao-hsm-pin` / key `pin` |
 | Storage | File storage, 1Gi PVC on `longhorn` |
-| Ingress | `openbao.home.lab` via Traefik (no TLS at pod) |
+| Ingress | `openbao.biduleproofzone.ovh` via Traefik, TLS via cert-manager (`cloudflare` issuer) |
 | UI | Enabled |
 | HA | Disabled |
 | Server CPU | 100–500m |
