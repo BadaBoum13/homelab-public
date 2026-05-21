@@ -60,7 +60,8 @@ spec:
   data:
     - secretKey: password
       remoteRef:
-        key: secret/my-app
+        # key is relative to the store mount ("secret"); do NOT prefix it with "secret/"
+        key: my-app
         property: password
 ```
 

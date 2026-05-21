@@ -1,3 +1,5 @@
+namespaceOverride: "security"
+
 installCRDs: true
 
 resources:
@@ -9,6 +11,13 @@ resources:
     memory: 128Mi
 
 webhook:
+  certManager:
+    enabled: true
+    cert:
+      issuerRef:
+        group: cert-manager.io
+        kind: ClusterIssuer
+        name: selfsigned
   resources:
     requests:
       cpu: 10m
@@ -18,15 +27,25 @@ webhook:
       memory: 64Mi
 
 certController:
-  resources:
-    requests:
-      cpu: 10m
-      memory: 32Mi
-    limits:
-      cpu: 50m
-      memory: 64Mi
+  create: false
+
+log:
+  level: error
+  timeEncoding: epoch
 
 serviceMonitor:
   enabled: true
   interval: 30s
   scrapeTimeout: 10s
+
+livenessProbe:
+  # -- Enabled determines if the liveness probe should be used or not. By default it's disabled.
+  enabled: false
+
+readinessProbe:
+  # -- Determines whether the readiness probe is enabled. Disabled by default. Enabling this will auto-start the health server (--live-addr) even if livenessProbe is disabled. Health server address/port are configured via livenessProbe.spec.address and livenessProbe.spec.port.
+  enabled: false
+
+grafanaDashboard:
+  # -- If true creates a Grafana dashboard.
+  enabled: false
