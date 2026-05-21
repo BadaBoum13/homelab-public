@@ -1,0 +1,32 @@
+---
+- name: Check which app secrets already exist
+  community.hashi_vault.vault_kv2_get:
+    engine_mount_point: secret
+    path: "{{ item.name }}"
+  loop: "{{ openbao_app_secrets }}"
+  loop_control:
+    label: "{{ item.name }}"
+  register: app_secret_check
+  failed_when: false
+
+- name: Generate passwords for missing app secrets
+  community.hashi_vault.vault_read:
+    path: sys/policies/password/homelab-password/generate
+  loop: "{{ openbao_app_secrets }}"
+  loop_control:
+    index_var: idx
+    label: "{{ item.name }}"
+  register: app_secret_gen
+  when: app_secret_check.results[idx].failed | default(false)
+
+- name: Write the generated app secrets into KV v2
+  community.hashi_vault.vault_kv2_write:
+    engine_mount_point: secret
+    path: "{{ item.name }}"
+    data:
+      password: "{{ app_secret_gen.results[idx].data.password }}"
+  loop: "{{ openbao_app_secrets }}"
+  loop_control:
+    index_var: idx
+    label: "{{ item.name }}"
+  when: app_secret_check.results[idx].failed | default(false)

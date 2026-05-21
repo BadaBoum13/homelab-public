@@ -1,0 +1,37 @@
+---
+- name: Write the oidc-admin ACL policy
+  community.hashi_vault.vault_write:
+    path: sys/policies/acl/oidc-admin
+    data:
+      policy: "{{ oidc_admin_hcl }}"
+  
+- name: Enable the oidc auth engine
+  community.hashi_vault.vault_write:
+    path: sys/auth/oidc
+    data:
+      type: oidc
+  when:
+    - "'oidc/' not in auth_methods.data"
+
+- name: Configure the oidc auth engine against Auth0
+  community.hashi_vault.vault_write:
+    path: auth/oidc/config
+    data:
+      oidc_discovery_url: "{{ openbao_oidc_discovery_url }}"
+      oidc_client_id: "{{ openbao_oidc_client_id }}"
+      oidc_client_secret: "{{ openbao_oidc_client_secret }}"
+      default_role: admin
+
+- name: Create the oidc admin role
+  community.hashi_vault.vault_write:
+    path: auth/oidc/role/admin
+    data:
+      user_claim: email
+      role_type: oidc
+      oidc_scopes: ["profile", "email"]
+      bound_audiences: ["{{ openbao_oidc_client_id }}"]
+      allowed_redirect_uris:
+        - "{{ openbao_external_url }}/ui/vault/auth/oidc/oidc/callback"
+        - "{{ openbao_external_url }}/oidc/callback"
+        - "http://localhost:8250/oidc/callback"
+      token_policies: ["oidc-admin"]

@@ -1,0 +1,47 @@
+---
+- name: Read OpenBao status
+  ansible.builtin.command: "{{ bao_exec_prefix }} bao status -format=json"
+  register: bao_status
+  changed_when: false
+  failed_when: false
+
+- name: Initialize OpenBao (auto-unseal -> recovery keys + root token)
+  ansible.builtin.command: >-
+    {{ bao_exec_prefix }} bao operator init
+    -recovery-shares=1 -recovery-threshold=1 -format=json
+  register: bao_init
+  changed_when: true
+  when: not (bao_status.stdout | from_json).initialized
+
+- name: Export init material to a gitignored file on the control machine
+  ansible.builtin.copy:
+    content: "{{ bao_init.stdout }}"
+    dest: "{{ openbao_init_file }}"
+    mode: "0600"
+  delegate_to: localhost
+  become: false
+  when: bao_init is not skipped
+
+- name: Load existing init material from the control machine
+  ansible.builtin.slurp:
+    src: "{{ openbao_init_file }}"
+  register: bao_init_file_raw
+  delegate_to: localhost
+  become: false
+  when: bao_init is skipped
+
+- name: Resolve root token
+  ansible.builtin.set_fact:
+    root_token: >-
+      {{ (bao_init.stdout | from_json).root_token
+         if bao_init is not skipped
+         else (bao_init_file_raw.content | b64decode | from_json).root_token }}
+
+- name: Wait until OpenBao is unsealed (PKCS11 auto-unseal)
+  ansible.builtin.command: "{{ bao_exec_prefix }} bao status -format=json"
+  register: bao_status_wait
+  changed_when: false
+  failed_when: false
+  retries: 30
+  delay: 5
+  until: not (bao_status_wait.stdout | from_json).sealed
