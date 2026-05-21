@@ -1,0 +1,15 @@
+---
+# Initialize and configure OpenBao with Ansible — replaces vault-config-operator.
+#
+# Thin entrypoint: all logic lives in the `openbao_config` role (roles/openbao_config).
+# The role runs ON the k3s node, opens a `kubectl port-forward` to the in-cluster
+# openbao service, and drives every config step through community.hashi_vault. It
+# mirrors the CRDs under app/security/vault-config-operator/config/ 1:1.
+#
+# Prereqs: ansible-galaxy collection install -r requirements.yml ; pip install hvac
+- name: Initialize and configure OpenBao
+  hosts: controlplane1
+  become: true
+  gather_facts: false
+  roles:
+    - role: openbao_config

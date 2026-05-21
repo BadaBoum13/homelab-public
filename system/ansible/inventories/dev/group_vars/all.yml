@@ -1,5 +1,0 @@
-harden_ssh: false
-
-enable_hsm: true
-hsm_pin: "V7Y3sNABzOjI3LBOeyDgyA=="
-hsm_so_pin: "WDHy5hRWRlTIERuHbeuz8g=="

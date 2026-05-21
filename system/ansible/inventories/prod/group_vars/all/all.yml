@@ -1,0 +1,15 @@
+enable_hsm: true
+
+# OpenBao bootstrap
+hsm_pin: "{{ vault_hsm_pin }}"
+hsm_so_pin: "{{ vault_hsm_so_pin }}"
+
+# OpenBao platform config (managed by playbooks/configure_openbao.yml)
+openbao_external_url: "https://openbao.biduleproofzone.ovh"
+openbao_init_file: "{{ lookup('env','HOME') }}/.openbao-init.json"  # 0600, on control machine, gitignored
+
+# OIDC (Auth0) — fill with real values (these are not secret)
+openbao_oidc_enable: true
+openbao_oidc_discovery_url: {{ vault_openbao_oidc_discovery_url }} 
+openbao_oidc_client_id: {{ vault_openbao_oidc_client_id }}
+openbao_oidc_client_secret: {{ vault_openbao_oidc_client_secret }}

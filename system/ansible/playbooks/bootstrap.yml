@@ -22,6 +22,8 @@
           - wget
           - zsh
           - cron
+          - pip
+          - python3
         state: present
 
     - name: Install packages for longhorn
@@ -203,27 +205,13 @@
         - enable_hsm | default(false)
         - hsm_key_label not in hsm_objects.stdout
 
-    # - name: Set key attributes for openbao-unseal-key
-    #   ansible.builtin.command: >
-    #     pkcs11-tool
-    #     --module "{{ hsm_module_path }}"
-    #     --token-label "{{ hsm_token_label }}"
-    #     --login --pin "{{ hsm_pin }}"
-    #     --set-attribute CKA_DECRYPT=true
-    #     --set-attribute CKA_ENCRYPT=true
-    #     --set-attribute CKA_UNWRAP=true
-    #     --id {{ hsm_key_id }}
-    #   when:
-    #     - enable_hsm | default(false)
-    #     - hsm_key_label not in hsm_objects.stdout
-
     - name: Generate AES:256 HMAC key in HSM token
       ansible.builtin.command: >
         pkcs11-tool
         --module "{{ hsm_module_path }}"
         --token-label "{{ hsm_token_label }}"
         --login --pin "{{ hsm_pin }}"
-        --keygen --key-type AES:256
+        --keygen --key-type AES:32
         --label "{{ hsm_hmac_key_label }}"
         --id {{ hsm_hmac_key_id }}
       notify: Back up SoftHSM2 token directory
