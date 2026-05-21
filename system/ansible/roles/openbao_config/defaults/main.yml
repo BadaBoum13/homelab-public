@@ -1,0 +1,18 @@
+---
+# Connection settings + app-secret list. Inventory may override these; the verbatim
+# HCL policies live in vars/main.yml (static CRD mirror, not meant to be overridden).
+openbao_namespace: security
+openbao_service: openbao
+openbao_port: 8200
+bao_addr: "http://127.0.0.1:{{ openbao_port }}"
+
+# `bao` inside the pod, with TLS disabled, talking to its local listener.
+bao_exec_prefix: >-
+  kubectl exec -n {{ openbao_namespace }} {{ openbao_pod | default('') }} --
+  env BAO_ADDR=http://127.0.0.1:{{ openbao_port }}
+
+# KV v2 secrets generated once and never rotated (no refreshPeriod in the CRDs).
+openbao_app_secrets: []
+
+# Default off so the `default(false)` guards behave the same when inventory omits it.
+openbao_oidc_enable: false

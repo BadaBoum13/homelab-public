@@ -1,0 +1,61 @@
+---
+# Verbatim HCL from vault-config-operator/config/{00-base,20-oidc-auth0}.yml.
+policy_admin_hcl: |
+  path "sys/mounts" {
+    capabilities = ["read", "list"]
+  }
+  path "sys/mounts/*" {
+    capabilities = ["create", "read", "update", "delete", "list"]
+  }
+  path "sys/auth" {
+    capabilities = ["read", "list"]
+  }
+  path "sys/auth/*" {
+    capabilities = ["create", "read", "update", "delete", "sudo"]
+  }
+  path "sys/policies/acl/*" {
+    capabilities = ["create", "read", "update", "delete", "list"]
+  }
+  path "sys/policies/password/*" {
+    capabilities = ["create", "read", "update", "delete", "list"]
+  }
+  path "auth/kubernetes/*" {
+    capabilities = ["create", "read", "update", "delete", "list"]
+  }
+  path "auth/oidc/*" {
+    capabilities = ["create", "read", "update", "delete", "list"]
+  }
+  path "secret/*" {
+    capabilities = ["create", "read", "update", "delete", "list"]
+  }
+  path "identity/*" {
+    capabilities = ["create", "read", "update", "delete", "list"]
+  }
+
+external_secrets_readonly_hcl: |
+  path "secret/data/*" {
+    capabilities = ["read"]
+  }
+  path "secret/metadata/*" {
+    capabilities = ["read", "list"]
+  }
+
+oidc_admin_hcl: |
+  path "*" {
+    capabilities = ["create", "read", "update", "delete", "list", "sudo"]
+  }
+
+homelab_password_policy_hcl: |
+  length = 24
+  rule "charset" {
+    charset = "abcdefghijklmnopqrstuvwxyzABCDEFGHIJKLMNOPQRSTUVWXYZ0123456789"
+    min-chars = 1
+  }
+  rule "charset" {
+    charset = "0123456789"
+    min-chars = 1
+  }
+  rule "charset" {
+    charset = "ABCDEFGHIJKLMNOPQRSTUVWXYZ"
+    min-chars = 1
+  }

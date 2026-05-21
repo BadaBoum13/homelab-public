@@ -1,0 +1,53 @@
+---
+# --- Policies (Policy) ---
+- name: Write the policy-admin ACL policy
+  community.hashi_vault.vault_write:
+    path: sys/policies/acl/policy-admin
+    data:
+      policy: "{{ policy_admin_hcl }}"
+
+- name: Write the external-secrets-readonly ACL policy
+  community.hashi_vault.vault_write:
+    path: sys/policies/acl/external-secrets-readonly
+    data:
+      policy: "{{ external_secrets_readonly_hcl }}"
+
+# --- Auth engines (VaultAuthEngineMount) ---
+# The kubernetes auth method must be mounted and configured before any roles can be
+# bound under auth/kubernetes/role/* — otherwise that path does not yet exist.
+- name: Read enabled auth methods
+  community.hashi_vault.vault_read:
+    path: sys/auth
+  register: auth_methods
+
+- name: Enable the kubernetes auth engine
+  community.hashi_vault.vault_write:
+    path: sys/auth/kubernetes
+    data:
+      type: kubernetes
+  when: "'kubernetes/' not in auth_methods.data"
+
+- name: Configure the kubernetes auth engine
+  community.hashi_vault.vault_write:
+    path: auth/kubernetes/config
+    data:
+      kubernetes_host: "https://kubernetes.default.svc"
+
+# --- Kubernetes auth roles (KubernetesAuthEngineRole) ---
+- name: Bind the policy-admin kubernetes role
+  community.hashi_vault.vault_write:
+    path: auth/kubernetes/role/policy-admin
+    data:
+      bound_service_account_names: vault-config-operator
+      bound_service_account_namespaces: security
+      token_policies: policy-admin
+      token_ttl: 3600
+
+- name: Bind the external-secrets kubernetes role
+  community.hashi_vault.vault_write:
+    path: auth/kubernetes/role/external-secrets
+    data:
+      bound_service_account_names: external-secrets
+      bound_service_account_namespaces: security
+      token_policies: external-secrets-readonly
+      token_ttl: 3600

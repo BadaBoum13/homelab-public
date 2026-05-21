@@ -1,0 +1,100 @@
+---
+# Initialize and configure OpenBao — replaces vault-config-operator.
+#
+# Runs ON the k3s node: opens a `kubectl port-forward` to the in-cluster openbao
+# service (reachable at http://127.0.0.1:8200 from the node) and drives every config
+# step through the community.hashi_vault collection. Initialization is the one step
+# with no collection module, so it runs `bao operator init` via `kubectl exec`.
+#
+# This mirrors the CRDs under app/security/vault-config-operator/config/ 1:1.
+- name: Ensure hvac is installed (required by community.hashi_vault)
+  ansible.builtin.pip:
+    name: hvac>=2.0.0
+    break_system_packages: true
+    state: present
+
+- name: Find the OpenBao server pod
+  ansible.builtin.command: >-
+    kubectl get pod -n {{ openbao_namespace }}
+    -l app.kubernetes.io/name=openbao,component=server
+    -o jsonpath={.items[0].metadata.name}
+  register: openbao_pod_query
+  changed_when: false
+
+- name: Set the OpenBao pod fact
+  ansible.builtin.set_fact:
+    openbao_pod: "{{ openbao_pod_query.stdout }}"
+
+- name: Configure OpenBao (port-forward open for the duration)
+  # Every community.hashi_vault module talks to the port-forwarded listener with the
+  # root token resolved by the "Resolve root token" task below.
+  module_defaults:
+    group/community.hashi_vault.vault:
+      url: "{{ bao_addr }}"
+      token: "{{ root_token | default(omit) }}"
+  block:
+    - name: Start kubectl port-forward to the OpenBao service
+      ansible.builtin.shell: >-
+        nohup kubectl port-forward
+        -n {{ openbao_namespace }} svc/{{ openbao_service }}
+        {{ openbao_port }}:{{ openbao_port }}
+        >/tmp/openbao-port-forward.log 2>&1 &
+        echo $!
+      register: port_forward
+      changed_when: true
+
+    - name: Wait for the local OpenBao port to accept connections
+      ansible.builtin.wait_for:
+        host: 127.0.0.1
+        port: "{{ openbao_port }}"
+        timeout: 30
+
+    # --- Initialization (no collection module exists; use `bao operator init`) ---
+    - name: Init openbao
+      ansible.builtin.import_tasks:
+        file: init.yml
+
+    # --- Auth kubernetes engines (VaultAuthEngineMount) ---
+    - name: Auth engines
+      ansible.builtin.import_tasks:
+        file: kubernetes_auth.yml
+
+    # --- OIDC (Auth0) login for the UI (JWTOIDCAuthEngine{Config,Role}) ---
+    - name: Configure OIDC on openbao
+      ansible.builtin.import_tasks:
+        file: oidc_auth.yml
+      when: openbao_oidc_enable | default(false)
+
+    # --- KV v2 secret engine (SecretEngineMount) ---
+    - name: Read mounted secret engines
+      community.hashi_vault.vault_read:
+        path: sys/mounts
+      register: secret_mounts
+
+    - name: Enable the KV v2 secret engine at secret/
+      community.hashi_vault.vault_write:
+        path: sys/mounts/secret
+        data:
+          type: kv
+          options:
+            version: "2"
+      when: "'secret/' not in secret_mounts.data"
+
+    # --- Password policy (PasswordPolicy) ---
+    # - name: Write the homelab-password generation policy
+    #   community.hashi_vault.vault_write:
+    #     path: sys/policies/password/homelab-password
+    #     data:
+    #       policy: "{{ homelab_password_policy_hcl }}"
+
+    # --- App secrets (RandomSecret) — generate once, never overwrite ---
+    # - name: App secrets
+    #   ansible.builtin.import_tasks:
+    #     file: app.yml
+
+  always:
+    - name: Stop the kubectl port-forward
+      ansible.builtin.command: "kill {{ port_forward.stdout }}"
+      changed_when: true
+      failed_when: false
+      when: port_forward.stdout is defined
