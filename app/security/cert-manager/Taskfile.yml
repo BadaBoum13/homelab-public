@@ -15,7 +15,7 @@ tasks:
       RELEASE_NAME: cert-manager
     cmds:
       - helm upgrade --install {{.RELEASE_NAME}} {{.REPO_NAME}} -n {{.NAMESPACE}} -f {{.TASKFILE_DIR}}/values.yml
-      - kubectl apply -f {{.TASKFILE_DIR}}/cloudflare-issuer.yml
+      - kubectl apply -f {{.TASKFILE_DIR}}/crd
 
   clean:
     desc: Remove cert-manager
