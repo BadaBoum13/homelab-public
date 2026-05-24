@@ -16,8 +16,8 @@ SoftHSM2 (PKCS11 seal key)
 ## Architecture
 
 - **Single instance** (HA disabled) with file storage on Longhorn
-- **Auto-unseal**: SoftHSM2 PKCS11 seal — OpenBao reads the PIN from the `openbao-hsm-pin` Kubernetes secret; the AES-256 GCM key lives in the SoftHSM2 token on the host
-- **Image**: `quay.io/openbao/openbao-hsm` (CGO-enabled for PKCS11)
+- **Auto-unseal**: SoftHSM2 PKCS11 seal — OpenBao reads the PIN from the `openbao-hsm-pin` Kubernetes secret; an RSA-4096 keypair lives in the SoftHSM2 token on the host and wraps the master key via `CKM_RSA_PKCS_OAEP` (SHA-256)
+- **Image**: `ghcr.io/badaboum13/openbao-hsm` (CGO-enabled for PKCS11)
 - **TLS**: disabled at the pod level — Traefik handles TLS termination at the ingress
 - **Metrics**: Prometheus endpoint exposed unauthenticated on port 8200
 
@@ -38,12 +38,13 @@ softhsm2-util --init-token --free \
   --pin "<user-pin>" \
   --so-pin "<so-pin>"
 
-# Generate the AES-256 unseal key
+# Generate the RSA-4096 unseal keypair
+# (OpenBao creates the HMAC key, "openbao-hmac-key", automatically on first unseal)
 pkcs11-tool \
   --module /usr/lib/x86_64-linux-gnu/softhsm/libsofthsm2.so \
   --token-label "openbao-token" \
   --login --pin "<user-pin>" \
-  --keygen --key-type aes:32 \
+  --keypairgen --key-type rsa:4096 \
   --label "openbao-unseal-key" --id 01
 
 # Export and back up the token (store in Dashlane or similar)
@@ -71,8 +72,8 @@ helm upgrade --install openbao openbao/openbao \
 | Setting | Value |
 |---|---|
 | Version | `2.x.x` (pinned in argocd-helm.yaml) |
-| Image | `quay.io/openbao/openbao-hsm` |
-| Seal type | PKCS11 (SoftHSM2, CKM_AES_GCM `0x1087`) |
+| Image | `ghcr.io/badaboum13/openbao-hsm` |
+| Seal type | PKCS11 (SoftHSM2, `CKM_RSA_PKCS_OAEP`, RSA-4096, SHA-256) |
 | HSM PIN source | Secret `openbao-hsm-pin` / key `pin` |
 | Storage | File storage, 1Gi PVC on `longhorn` |
 | Ingress | `openbao.biduleproofzone.ovh` via Traefik, TLS via cert-manager (`cloudflare` issuer) |
@@ -88,6 +89,7 @@ helm upgrade --install openbao openbao/openbao \
 ## Resources
 
 - [OpenBao Documentation](https://openbao.org/docs/)
+- [OpenBao Documentation pkcs11](https://openbao.org/docs/configuration/seal/pkcs11/)
 - [openbao-helm Chart values reference](https://github.com/openbao/openbao-helm/blob/main/charts/openbao/values.yaml)
 - [SoftHSM2 Documentation](https://github.com/opendnssec/SoftHSMv2)
 - [Grafana Dashboard](https://grafana.com/grafana/dashboards/23725-openbao)
