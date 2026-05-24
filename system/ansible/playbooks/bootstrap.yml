@@ -191,13 +191,13 @@
       when: enable_hsm | default(false)
 
 
-    - name: Generate RSA-2048 unseal keypair in HSM token
+    - name: Generate RSA-4096 unseal keypair in HSM token
       ansible.builtin.command: >
         pkcs11-tool
         --module "{{ hsm_module_path }}"
         --token-label "{{ hsm_token_label }}"
         --login --pin "{{ hsm_pin }}"
-        --keypairgen --key-type RSA:2048
+        --keypairgen --key-type RSA:4096
         --label "{{ hsm_key_label }}"
         --id {{ hsm_key_id }}
       notify: Back up SoftHSM2 token directory
