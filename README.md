@@ -114,30 +114,32 @@ ArgoCD deploys applications in waves to respect dependency ordering:
 
 ---
 
-## Getting Started
+## Run Order
 
-### 1. Provision the node
+Bring the cluster up in this order — each step depends on the previous one being
+ready.
 
-```bash
-cd system/ansible
-ansible-playbook -i inventory.yml playbooks/bootstrap.yml
-ansible-playbook -i inventory.yml playbooks/tailscale.yml
-ansible-playbook -i inventory.yml playbooks/install_k3s.yml
-```
+### Cluster minimum
 
-### 2. Bootstrap ArgoCD
+1. **Ansible — provision the node** (`cd system/ansible`)
+   - `playbooks/bootstrap.yml`
+   - `playbooks/install_k3s.yml`
+   - `playbooks/tailscale.yml` *(prod only)*
+2. **`app/monitoring/prometheus-operator-crds`** — CRDs other components rely on
+3. **`app/security/cert-manager`** — TLS issuance
+4. **`app/security/openbao`** — secret store (sealed until configured)
+5. **Ansible — `playbooks/configure_openbao.yml`** — init/unseal, auth engines,
+   policies, OIDC, KV mount (must run after OpenBao is up)
+6. **`app/security/external-secrets-operator`** — needs OpenBao's `external-secrets`
+   kubernetes-auth role to exist first
 
-```bash
-kubectl apply -k app/CD/argoCD/
-```
+### Everything else
 
-### 3. Apply the bootstrap application
+7. **`app/*`** — all remaining applications (monitoring, storage, shared, network,
+   …). These consume secrets projected by ESO, so they come last.
 
-```bash
-kubectl apply -f app/argocd-bootstrap.yaml
-```
-
-ArgoCD will then reconcile all other applications automatically.
+> The cluster minimum (steps 1–6) is the hard-ordered bootstrap; once ESO is up,
+> the rest of `app/*` can be reconciled by ArgoCD.
 
 ---
 
