@@ -1,0 +1,80 @@
+---
+version: '3'
+
+env:
+  KUBECONFIG: '{{.HOME}}/.kube/config-k3s'
+
+vars:
+  ANSIBLE_DIR: '{{.TASKFILE_DIR}}/system/ansible'
+  COMPOSE_FILE: '{{.TASKFILE_DIR}}/system/ansible/test_env/docker-compose.yaml'
+  INVENTORY: inventories/dev/inventory.yml
+  VAULT_PASS: .vault_pass_dev.yml
+
+includes:
+  prometheus-crds: ./app/monitoring/prometheus-operator-crds
+  cert-manager: ./app/security/cert-manager
+  openbao: ./app/security/openbao
+  external-secrets: ./app/security/external-secrets-operator
+
+tasks:
+  default:
+    desc: List available tasks
+    cmds:
+      - task --list
+
+  dev:
+    desc: Provision a minimal healthy dev k3s cluster end-to-end
+    cmds:
+      - task: mount
+      - task: docker-up
+      - task: bootstrap
+      - task: install-k3s
+      - task: kubeconfig
+      - task: deploy
+      - task: configure-openbao
+
+  # --- Host / environment ---
+  mount:
+    desc: Make root mount rshared (required for k3s/longhorn in the container)
+    cmds:
+      - sudo mount --make-rshared /
+
+  docker-up:
+    desc: Start the dev container (ubuntu+systemd) used as the k3s node
+    cmds:
+      - docker compose -f {{.COMPOSE_FILE}} up -d --build
+
+  # --- Ansible (run inside system/ansible so ansible.cfg/roles resolve) ---
+  bootstrap:
+    desc: Bootstrap the node (packages, SoftHSM2 for OpenBao)
+    dir: '{{.ANSIBLE_DIR}}'
+    cmds:
+      - ansible-playbook -i {{.INVENTORY}} --vault-password-file {{.VAULT_PASS}} playbooks/bootstrap.yml
+
+  install-k3s:
+    desc: Install k3s on the dev node
+    dir: '{{.ANSIBLE_DIR}}'
+    cmds:
+      - ansible-playbook -i {{.INVENTORY}} --vault-password-file {{.VAULT_PASS}} playbooks/install_k3s.yml
+
+  kubeconfig:
+    desc: Fetch kubeconfig to ~/.kube/config-k3s
+    dir: '{{.ANSIBLE_DIR}}'
+    cmds:
+      - ansible-playbook -i {{.INVENTORY}} --vault-password-file {{.VAULT_PASS}} playbooks/post_dev_installation.yml
+
+  configure-openbao:
+    desc: Initialize and configure OpenBao
+    dir: '{{.ANSIBLE_DIR}}'
+    cmds:
+      - ansible-playbook -i {{.INVENTORY}} --vault-password-file {{.VAULT_PASS}} playbooks/configure_openbao.yml
+
+  # --- Cluster deploys (KUBECONFIG inherited from global env) ---
+  deploy:
+    desc: Deploy minimal cluster components (CRDs, cert-manager, openbao, ESO)
+    cmds:
+      - kubectl create namespace security --dry-run=client -o yaml | kubectl apply -f -
+      - task: prometheus-crds:deploy
+      - task: cert-manager:deploy
+      - task: openbao:deploy
+      # - task: external-secrets:deploy

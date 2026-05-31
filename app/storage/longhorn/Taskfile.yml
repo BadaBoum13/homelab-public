@@ -24,9 +24,7 @@ tasks:
       RELEASE_NAME: longhorn
     cmds:
       - helm upgrade --install {{.RELEASE_NAME}} {{.REPO_NAME}}/{{.CHART_NAME}} -n {{.NAMESPACE}} -f {{.TASKFILE_DIR}}/values.yml
-      - kubectl apply -f {{.TASKFILE_DIR}}/storageclass_ssd.yml
-      - kubectl apply -f {{.TASKFILE_DIR}}/storageclass_raid.yml
-      - kubectl apply -f {{.TASKFILE_DIR}}/storageclass_ssd_short_live.yml
+      - kubectl apply -f {{.TASKFILE_DIR}}/crd
 
   clean:
     desc: Remove Longhorn
@@ -34,7 +32,5 @@ tasks:
       NAMESPACE: longhorn-system
       RELEASE_NAME: longhorn
     cmds:
-      - kubectl delete -f {{.TASKFILE_DIR}}/storageclass_ssd_short_live.yml --ignore-not-found
-      - kubectl delete -f {{.TASKFILE_DIR}}/storageclass_raid.yml --ignore-not-found
-      - kubectl delete -f {{.TASKFILE_DIR}}/storageclass_ssd.yml --ignore-not-found
+      - kubectl delete -f {{.TASKFILE_DIR}}/crd --ignore-not-found
       - helm uninstall {{.RELEASE_NAME}} -n {{.NAMESPACE}} --ignore-not-found

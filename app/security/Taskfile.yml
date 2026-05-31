@@ -25,14 +25,12 @@ tasks:
     desc: Add/update all Helm repositories
     cmds:
       - task: openbao:repos
-      - task: vault-config-operator:repos
       - task: external-secrets-operator:repos
 
   deploy:
     desc: Deploy all security components
     cmds:
       - task: openbao:deploy
-      - task: vault-config-operator:deploy
       - task: cert-manager:deploy
       - task: external-secrets-operator:deploy
 
@@ -41,5 +39,4 @@ tasks:
     cmds:
       - task: external-secrets-operator:clean
       - task: cert-manager:clean
-      - task: vault-config-operator:clean
       - task: openbao:clean

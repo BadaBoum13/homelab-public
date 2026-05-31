@@ -25,6 +25,13 @@
           - pip
           - python3
         state: present
+    
+    - name: Install ansible dependencies on the remote host
+      ansible.builtin.pip:
+        name:
+          - kubernetes
+        break_system_packages: true
+        state: present
 
     - name: Install packages for longhorn
       apt:
@@ -211,7 +218,7 @@
         --module "{{ hsm_module_path }}"
         --token-label "{{ hsm_token_label }}"
         --login --pin "{{ hsm_pin }}"
-        --keygen --key-type AES:32
+        --keygen --key-type GENERIC:32
         --label "{{ hsm_hmac_key_label }}"
         --id {{ hsm_hmac_key_id }}
       notify: Back up SoftHSM2 token directory
