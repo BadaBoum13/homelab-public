@@ -1,1 +1,7 @@
 system/ansible/test_env/longhorn-data/*
+
+.vault_pass_dev.yml
+.vault_pass_prod.yml
+
+# OpenBao init material (root token + recovery keys) — never commit
+.openbao-init.json

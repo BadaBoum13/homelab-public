@@ -3,3 +3,39 @@
     k3s_become: true
   roles:
     - role: xanmanning.k3s
+
+# Provision the HSM PIN as a k8s secret so OpenBao can unseal against the HSM.
+# Runs on a single k3s node (run_once), using the node's local k3s kubeconfig.
+- hosts: k3s_cluster
+  become: true
+  gather_facts: false
+  vars:
+    kubeconfig_path: /etc/rancher/k3s/k3s.yaml
+  tasks:
+    - name: Provision the OpenBao HSM PIN secret
+      when: enable_hsm | bool
+      run_once: true
+      block:
+        - name: Ensure the security namespace exists
+          kubernetes.core.k8s:
+            kubeconfig: "{{ kubeconfig_path }}"
+            state: present
+            definition:
+              apiVersion: v1
+              kind: Namespace
+              metadata:
+                name: security
+
+        - name: Create the openbao-hsm-pin secret
+          kubernetes.core.k8s:
+            kubeconfig: "{{ kubeconfig_path }}"
+            state: present
+            definition:
+              apiVersion: v1
+              kind: Secret
+              metadata:
+                name: openbao-hsm-pin
+                namespace: security
+              stringData:
+                pin: "{{ hsm_pin }}"
+          no_log: true
