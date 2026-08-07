@@ -1,0 +1,62 @@
+FROM debian:trixie
+ARG USERNAME=devcontainer
+ARG USER_UID=1001
+ARG USER_GID=$USER_UID
+
+
+# General packages / Mise - https://mise.jdx.dev
+RUN apt-get update \
+    && apt-get install -y --no-install-recommends \
+        python3 python3-pip python3-venv python3-setuptools python3-wheel \
+        jq yq curl unzip git nano zsh tree htop \
+        apt-transport-https gnupg wget groff sudo \
+        ca-certificates \
+    && apt-get clean \
+    && rm -rf /var/lib/apt/lists/*
+
+# TENV
+RUN LATEST_VERSION=$(curl --silent https://api.github.com/repos/tofuutils/tenv/releases/latest | jq -r .tag_name)   \
+    && curl -O -L "https://github.com/tofuutils/tenv/releases/latest/download/tenv_${LATEST_VERSION}_amd64.deb"    \
+    && dpkg -i "tenv_${LATEST_VERSION}_amd64.deb"  \
+    && tenv tofu install
+
+# Create the user
+RUN groupadd --gid $USER_GID $USERNAME \
+    && useradd --uid $USER_UID --gid $USER_GID --shell /bin/zsh -m $USERNAME \
+    && apt-get install -y sudo \
+    && echo "$USERNAME ALL=(root) NOPASSWD:ALL" > /etc/sudoers.d/$USERNAME \
+    && chmod 0440 /etc/sudoers.d/$USERNAME
+
+USER $USERNAME
+
+# install brew
+RUN NONINTERACTIVE=1 /bin/bash -c "$(curl -fsSL https://raw.githubusercontent.com/Homebrew/install/HEAD/install.sh)"
+ENV PATH="/home/linuxbrew/.linuxbrew/bin:/home/linuxbrew/.linuxbrew/sbin:${PATH}"
+
+# Oh my zsh
+RUN RUNZSH=no CHSH=no sh -c "$(curl -fsSL https://raw.githubusercontent.com/ohmyzsh/ohmyzsh/master/tools/install.sh)" \
+    &&  git clone --depth=1 https://github.com/romkatv/powerlevel10k.git "${ZSH_CUSTOM:-$HOME/.oh-my-zsh/custom}/themes/powerlevel10k" \
+    && git clone https://github.com/zsh-users/zsh-autosuggestions ${ZSH_CUSTOM:-~/.oh-my-zsh/custom}/plugins/zsh-autosuggestions \
+    && git clone https://github.com/zsh-users/zsh-syntax-highlighting.git ${ZSH_CUSTOM:-~/.oh-my-zsh/custom}/plugins/zsh-syntax-highlighting
+
+# var env
+
+ENV TENV_AUTO_INSTALL=true
+ENV LC_ALL="C.UTF-8" 
+ENV PATH=$PATH:~/.local/bin
+
+## AI
+
+# RTK
+RUN curl -fsSL https://raw.githubusercontent.com/rtk-ai/rtk/refs/heads/master/install.sh | sh
+RUN sudo apt-get update && sudo apt-get install -y ripgrep fd-find
+
+# Mise
+COPY ./zsh/mise.toml /home/$USERNAME/.config/mise/config.toml
+
+RUN brew install mise \
+    && cd /home/$USERNAME/ && mise install
+
+
+CMD [ "/bin/sh", "-c", "sleep infinity" ]
+

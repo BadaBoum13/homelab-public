@@ -1,0 +1,16 @@
+# https://mise-versions.jdx.dev/
+
+[tools]
+awscli = "2.36"
+task = "3.52.0"
+kubectl = "1.33"
+helm = "4.2.3"
+terraform-docs = "0.24.0"
+tflint = "0.64.0"
+tfsec = "1.28"
+trivy = "0.72"
+go = "1.26.0"
+node = "lts"
+yarn = "4.17.1"
+pipx = "1.16.3"
+ansible = "14.2.0"

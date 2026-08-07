@@ -1,0 +1,15 @@
+services:
+  devcontainer:
+    build: 
+      context: ./images
+      dockerfile: dockerfile
+      args:
+        - USERNAME=devcontainer
+        - USER_UID=1001
+    volumes:
+      - ..:/workspaces:cached
+      - /home/julien/.ssh/:/home/devcontainer/.ssh
+      - ./images/zsh/mise.toml:/home/devcontainer/mise.toml:rw
+      - ./images/zsh/.zshrc:/home/devcontainer/.zshrc:rw
+      - ./images/zsh/.p10k.zsh:/home/devcontainer/.p10k.zsh:rw
+      - ./images/zsh/:/home/devcontainer/zsh_history_data/
