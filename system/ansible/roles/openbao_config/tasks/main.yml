@@ -59,6 +59,11 @@
       ansible.builtin.import_tasks:
         file: kubernetes_auth.yml
 
+    # --- Auth VCO  (vault config operator) ---
+    - name: VCO auth configuration
+      ansible.builtin.import_tasks:
+        file: vco_auth.yml
+
     # --- OIDC (Auth0) login for the UI (JWTOIDCAuthEngine{Config,Role}) ---
     - name: Configure OIDC on openbao
       ansible.builtin.import_tasks:

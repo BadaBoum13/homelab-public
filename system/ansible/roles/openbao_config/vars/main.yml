@@ -1,42 +1,35 @@
 ---
 # Verbatim HCL from vault-config-operator/config/{00-base,20-oidc-auth0}.yml.
-policy_admin_hcl: |
+vco_policy_admin_hcl: |
   path "sys/mounts" {
     capabilities = ["read", "list"]
   }
-  path "sys/mounts/*" {
+  path "sys/mounts/vco-managed/*" {
     capabilities = ["create", "read", "update", "delete", "list"]
   }
   path "sys/auth" {
     capabilities = ["read", "list"]
   }
-  path "sys/auth/*" {
-    capabilities = ["create", "read", "update", "delete", "sudo"]
-  }
-  path "sys/policies/acl/*" {
+  # Auth method config — scoped to kubernetes ROLES only. The kubernetes auth
+  # mount's top-level config (auth/kubernetes/config) is bootstrapped manually
+  # outside VCO (see openbao-k8s-auth-bootstrap.yml) and intentionally excluded
+  # here so VCO cannot drift or overwrite it.
+  path "auth/kubernetes/role/*" {
     capabilities = ["create", "read", "update", "delete", "list"]
   }
-  path "sys/policies/password/*" {
+  path "sys/policies/acl/vco-*" {
     capabilities = ["create", "read", "update", "delete", "list"]
   }
-  path "auth/kubernetes/*" {
+  path "sys/policies/password/vco-*" {
     capabilities = ["create", "read", "update", "delete", "list"]
   }
-  path "auth/oidc/*" {
+  # KV secrets — templated by the calling entity's own Kubernetes namespace,
+  # so one policy dynamically scopes each caller to ITS OWN namespace path
+  # instead of granting blanket secret/* access to everyone.
+  path "secret/data/{{{{identity.entity.aliases.{{ k8s_auth_accessor }}.metadata.service_account_namespace}}}}/*" {
     capabilities = ["create", "read", "update", "delete", "list"]
   }
-  path "secret/*" {
-    capabilities = ["create", "read", "update", "delete", "list"]
-  }
-  path "identity/*" {
-    capabilities = ["create", "read", "update", "delete", "list"]
-  }
-
-external_secrets_readonly_hcl: |
-  path "secret/data/*" {
-    capabilities = ["read"]
-  }
-  path "secret/metadata/*" {
+  path "secret/metadata/{{{{identity.entity.aliases.{{ k8s_auth_accessor }}.metadata.service_account_namespace}}}}/*" {
     capabilities = ["read", "list"]
   }
 
