@@ -1,0 +1,68 @@
+// For format details, see https://aka.ms/devcontainer.json. For config options, see the
+// README at: https://github.com/devcontainers/templates/tree/main/src/debian
+// reference: https://containers.dev/implementors/json_reference/
+{
+	"name": "dind",
+	"dockerComposeFile": "../docker-compose.yml",
+	"service": "devcontainer",
+	"workspaceFolder": "/workspaces",
+	"shutdownAction": "none",
+	// "forwardPorts": [8080, 8081],
+	"features": {
+    "ghcr.io/devcontainers/features/docker-in-docker:4": {
+			"moby": false
+		}
+	},
+	"customizations": {
+		"vscode": {
+			"extensions": [ // https://containers.dev/features
+				"eamodio.gitlens",
+				"streetsidesoftware.code-spell-checker",
+				"in4margaret.compareit",
+				"tamasfe.even-better-toml",
+				"usernamehw.errorlens",
+				"redhat.vscode-yaml",
+				"Gruntfuggly.todo-tree",
+				"ms-azuretools.vscode-docker",
+				"ms-vscode-remote.remote-containers",
+				"ms-vscode-remote.remote-ssh",
+				"ms-vscode-remote.remote-ssh-edit",
+				"ms-vscode.remote-explorer",
+				"ms-vsliveshare.vsliveshare",
+				"task.vscode-task",
+				"davidanson.vscode-markdownlint",
+				"esbenp.prettier-vscode",
+				"editorconfig.editorconfig",
+				"Anthropic.claude-code"
+			],
+			"settings": {
+        // --- 1. Terminal & Shell Tuning ---
+        "terminal.integrated.defaultProfile.linux": "zsh",
+        "terminal.integrated.fontFamily": "'FiraCode Nerd Font', 'Cascadia Code', monospace",
+
+        // --- 2. Developer Experience & Automation ---
+        "editor.formatOnSave": true,
+        "editor.codeActionsOnSave": {
+          "source.organizeImports": "explicit",
+          "source.fixAll": "explicit"
+        },
+        "files.trimTrailingWhitespace": true,
+        "files.insertFinalNewline": true,
+
+        // --- 3. Git & Diff Improvements ---
+        "git.autofetch": true,
+        "git.confirmSync": false,
+        "diffEditor.ignoreTrimWhitespace": false,
+
+        // --- 4. File Exclusions (Saves Memory & Keeps Search Clean) ---
+        "files.watcherExclude": {
+          "**/.git/objects/**": true,
+          "**/.git/subtree-cache/**": true,
+          "**/node_modules/*/**": true,
+          "**/.venv/**": true
+        }
+      }
+		}
+	},
+	"remoteUser": "devcontainer"
+}

@@ -1,0 +1,36 @@
+// For format details, see https://aka.ms/devcontainer.json. For config options, see the
+// README at: https://github.com/devcontainers/templates/tree/main/src/debian
+// reference: https://containers.dev/implementors/json_reference/
+{
+	"name": "dood",
+	"dockerComposeFile": "../docker-compose.yml",
+	"service": "devcontainer",
+	"workspaceFolder": "/workspaces",
+	"shutdownAction": "none",
+  "features": {
+    "ghcr.io/devcontainers/features/docker-outside-of-docker:1": {
+			"moby": false
+		}
+	},
+	"customizations": {
+		"vscode": {
+			"extensions": [
+				"eamodio.gitlens",
+				"streetsidesoftware.code-spell-checker",
+				"in4margaret.compareit",
+				"ms-azuretools.vscode-docker",
+				"ms-vscode-remote.remote-containers",
+				"ms-vscode-remote.remote-ssh",
+				"ms-vscode-remote.remote-ssh-edit",
+				"ms-vscode.remote-explorer",
+				"ms-vsliveshare.vsliveshare",
+				"task.vscode-task",
+				"davidanson.vscode-markdownlint",
+				"esbenp.prettier-vscode",
+				"editorconfig.editorconfig",
+				"Anthropic.claude-code"
+			]
+		}
+	},
+	"remoteUser": "devcontainer"
+}
