@@ -1,0 +1,25 @@
+---
+- name: Get kubernetes accessor
+  community.hashi_vault.vault_read:
+    path: sys/auth/kuberenetes
+  register: k8s_auth_info
+
+- name: Set Kubernetes auth accessor as a fact
+  ansible.builtin.set_fact:
+    k8s_auth_accessor: "{{ k8s_auth_info.data.accessor }}"
+
+- name: Write the policy-admin ACL policy
+  community.hashi_vault.vault_write:
+    path: sys/policies/acl/vpc-policy-admin
+    data:
+      policy: "{{ vco_policy_admin_hcl }}"
+
+- name: Bind the policy-admin kubernetes role
+  community.hashi_vault.vault_write:
+    path: auth/kubernetes/role/policy-admin
+    data:
+      bound_service_account_names: vault-config-operator
+      bound_service_account_namespaces: security
+      token_policies: policy-admin
+      token_ttl: 3600
+

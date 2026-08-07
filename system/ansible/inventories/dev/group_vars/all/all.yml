@@ -16,10 +16,10 @@ openbao_oidc_client_id: "{{ vault_openbao_oidc_client_id }}"
 openbao_oidc_client_secret: "{{ vault_openbao_oidc_client_secret }}"
 
 
-openbao_app_secrets:
-  - { name: postgresql-admin }
-  - { name: postgresql-user }
-  - { name: nextcloud-admin }
-  - { name: grafana-admin }
+# openbao_app_secrets:
+#   - { name: postgresql-admin }
+#   - { name: postgresql-user }
+#   - { name: nextcloud-admin }
+#   - { name: grafana-admin }
 
 
