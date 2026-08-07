@@ -12,8 +12,8 @@ spec:
     targetRevision: HEAD
     path: app/security/external-secrets-operator
     directory:
-      recurse: false
-      include: "cluster-secret-store.yml"
+      recurse: true
+      include: "crd"
   destination:
     server: https://kubernetes.default.svc
     namespace: security

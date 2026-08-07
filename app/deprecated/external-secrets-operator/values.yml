@@ -2,6 +2,13 @@ namespaceOverride: "security"
 
 installCRDs: true
 
+serviceAccount:
+  create: true
+  automount: true
+  annotations: {}
+  extraLabels: {}
+  name: "external-secrets"
+
 resources:
   requests:
     cpu: 10m
