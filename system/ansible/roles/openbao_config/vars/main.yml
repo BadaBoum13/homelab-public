@@ -26,10 +26,18 @@ vco_policy_admin_hcl: |
   # KV secrets — templated by the calling entity's own Kubernetes namespace,
   # so one policy dynamically scopes each caller to ITS OWN namespace path
   # instead of granting blanket secret/* access to everyone.
-  path "secret/data/{{{{identity.entity.aliases.{{ k8s_auth_accessor }}.metadata.service_account_namespace}}}}/*" {
+  path "secret/data/{% raw %}{{identity.entity.aliases.{% endraw %}{{ k8s_auth_accessor }}{% raw %}.metadata.service_account_namespace}}{% endraw %}/*" {
     capabilities = ["create", "read", "update", "delete", "list"]
   }
-  path "secret/metadata/{{{{identity.entity.aliases.{{ k8s_auth_accessor }}.metadata.service_account_namespace}}}}/*" {
+  path "secret/metadata/{% raw %}{{identity.entity.aliases.{% endraw %}{{ k8s_auth_accessor }}{% raw %}.metadata.service_account_namespace}}{% endraw %}/*" {
+    capabilities = ["read", "list"]
+  }
+
+  # Engine managed by terraform for auth0 secret for SSO
+  path "auth0/data/{% raw %}{{identity.entity.aliases.{% endraw %}{{ k8s_auth_accessor }}{% raw %}.metadata.service_account_namespace}}{% endraw %}/*" {
+    capabilities = ["read", "list"]
+  }
+  path "auth0/metadata/{% raw %}{{identity.entity.aliases.{% endraw %}{{ k8s_auth_accessor }}{% raw %}.metadata.service_account_namespace}}{% endraw %}/*" {
     capabilities = ["read", "list"]
   }
 

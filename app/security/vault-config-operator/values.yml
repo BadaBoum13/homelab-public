@@ -1,0 +1,30 @@
+replicaCount: 1
+
+image:
+  repository: quay.io/redhat-cop/vault-config-operator
+  tag: "v0.8.51"
+  pullPolicy: IfNotPresent
+
+env:
+  - name: VAULT_ADDR
+    value: "http://openbao.security.svc:8200"
+
+resources:
+  requests:
+    cpu: 100m
+    memory: 250Mi
+  limits:
+    cpu: 500m
+    memory: 512Mi
+
+enableMonitoring: false
+enableCertManager: true
+
+podSecurityContext:
+  runAsNonRoot: true
+
+securityContext:
+  allowPrivilegeEscalation: false
+  capabilities:
+    drop:
+      - ALL

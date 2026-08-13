@@ -1,0 +1,34 @@
+---
+version: '3'
+
+tasks:
+  default:
+    desc: Deploy vault-config-operator
+    cmds:
+      - task: deploy
+
+  repos:
+    desc: Add vault-config-operator Helm repository
+    vars:
+      REPO_NAME: redhat-cop
+    cmds:
+      - helm repo add {{.REPO_NAME}} https://redhat-cop.github.io/vault-config-operator
+      - helm repo update {{.REPO_NAME}}
+
+  deploy:
+    desc: Deploy vault-config-operator using Helm
+    vars:
+      NAMESPACE: security
+      CHART_NAME: vault-config-operator
+      REPO_NAME: redhat-cop
+      RELEASE_NAME: vault-config-operator
+    cmds:
+      - helm upgrade --install {{.RELEASE_NAME}} {{.REPO_NAME}}/{{.CHART_NAME}} -n {{.NAMESPACE}} -f {{.TASKFILE_DIR}}/values.yml --create-namespace --wait
+
+  clean:
+    desc: Remove vault-config-operator
+    vars:
+      NAMESPACE: security
+      RELEASE_NAME: vault-config-operator
+    cmds:
+      - helm uninstall {{.RELEASE_NAME}} -n {{.NAMESPACE}} --ignore-not-found
