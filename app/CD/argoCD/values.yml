@@ -9,13 +9,6 @@ global:
 crds:
   install: false
 
-# TODO: can fix the ingress
-# config:
-#   params:
-#     create: true
-#     server:
-#       insecure: "true"
-
 server:
   replicas: 1
   metrics:
@@ -26,11 +19,10 @@ server:
     enabled: true
     ingressClassName: traefik
     annotations:
-      kubernetes.io/ingress.class: "traefik"
       cert-manager.io/cluster-issuer: "cloudflare"
     tls: true
   certificate:
-    enabled: true
+    enabled: false
   resources:
     limits:
       cpu: 100m
@@ -46,7 +38,7 @@ controller:
     serviceMonitor:
       enabled: true
     rules:
-      enabled: true
+      enabled: false # bug in the chart
   resources:
     limits:
       cpu: 500m
@@ -56,13 +48,15 @@ controller:
       memory: 256Mi
 
 configs:
+  params:
+    server.insecure: true
   cm:
     url: https://argocd.biduleproofzone.ovh
     oidc.config: |
       name: Auth0
-      issuer: $oidc.auth0.issuer
-      clientID: $oidc.auth0.clientID
-      clientSecret: $oidc.auth0.clientSecret
+      issuer: $argocd-oidc:oidc.auth0.issuer
+      clientID: $argocd-oidc:oidc.auth0.clientID
+      clientSecret: $argocd-oidc:oidc.auth0.clientSecret
       requestedScopes:
         - openid
         - profile

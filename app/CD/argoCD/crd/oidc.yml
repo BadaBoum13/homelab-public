@@ -1,0 +1,24 @@
+apiVersion: redhatcop.redhat.io/v1alpha1
+kind: VaultSecret
+metadata:
+  name: argocd-oidc
+  namespace: argocd
+spec:
+  refreshPeriod: 1h
+  vaultSecretDefinitions:
+    - authentication:
+        path: kubernetes
+        role: kubernetes
+        serviceAccount:
+          name:  argocd-server
+      name: auth0
+      path: auth0/data/argocd/argocd
+  output:
+    name: argocd-oidc
+    labels:
+      app.kubernetes.io/part-of: argocd
+    stringData:
+      oidc.auth0.clientID: '{{ .auth0.client_id }}'
+      oidc.auth0.clientSecret: '{{ .auth0.client_secret }}'
+      oidc.auth0.issuer: '{{ .auth0.issuer }}'
+    type: Opaque
