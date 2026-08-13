@@ -110,8 +110,9 @@ server:
       memory: 256Mi
 
   dataStorage:
-    enabled: false
-    size: 500Mi
+    enabled: true
+    size: 1Gi
+    mountPath: "/openbao/data"
     storageClass: longhorn
     accessMode: ReadWriteOnce
 

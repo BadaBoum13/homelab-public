@@ -1,3 +1,7 @@
+env: prod
+
+k3s_release_version: v1.36
+
 enable_hsm: true
 
 # OpenBao bootstrap
@@ -10,6 +14,6 @@ openbao_init_file: "{{ lookup('env','HOME') }}/.openbao-init.json"  # 0600, on c
 
 # OIDC (Auth0) — fill with real values (these are not secret)
 openbao_oidc_enable: true
-openbao_oidc_discovery_url: {{ vault_openbao_oidc_discovery_url }} 
-openbao_oidc_client_id: {{ vault_openbao_oidc_client_id }}
-openbao_oidc_client_secret: {{ vault_openbao_oidc_client_secret }}
+openbao_oidc_discovery_url: "{{ vault_openbao_oidc_discovery_url }}" 
+openbao_oidc_client_id: "{{ vault_openbao_oidc_client_id }}"
+openbao_oidc_client_secret: "{{ vault_openbao_oidc_client_secret }}"
