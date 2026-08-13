@@ -10,7 +10,7 @@ spec:
   source:
     repoURL: https://victoriametrics.github.io/helm-charts/
     chart: victoria-metrics-operator-crds
-    targetRevision: "*"
+    targetRevision: "0.4.0"
   destination:
     server: https://kubernetes.default.svc
     namespace: monitoring
