@@ -26,7 +26,7 @@ tasks:
       - kubectl apply --server-side=true -k https://github.com/argoproj/argo-cd/manifests/crds?ref=stable
       - helm upgrade --install {{.RELEASE_NAME}} {{.REPO_NAME}}/{{.CHART_NAME}} -n {{.NAMESPACE}} --create-namespace -f {{.TASKFILE_DIR}}/values.yml
       - kubectl apply -f {{.TASKFILE_DIR}}/crd
-      # - kubectl apply -f {{.TASKFILE_DIR}}/../../argocd-bootstrap.yaml
+      - kubectl apply -f {{.TASKFILE_DIR}}/../../argocd-bootstrap.yaml
 
   clean:
     desc: Remove ArgoCD
