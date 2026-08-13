@@ -1,0 +1,20 @@
+apiVersion: redhatcop.redhat.io/v1alpha1
+kind: VaultSecret
+metadata:
+  name: cert-manager-cloudflare-token
+  namespace: security
+spec:
+  refreshPeriod: 1h
+  vaultSecretDefinitions:
+    - authentication:
+        path: kubernetes
+        role: kubernetes
+        serviceAccount:
+          name:  cert-manager
+      name: cloudflare
+      path: secret/data/security/cert-manager
+  output:
+    name: cloudflare-api-token-secret
+    stringData:
+      api-token: '{{ .cloudflare.cloudflare_token }}'
+    type: Opaque
