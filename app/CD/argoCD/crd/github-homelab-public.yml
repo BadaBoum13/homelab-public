@@ -1,0 +1,25 @@
+apiVersion: redhatcop.redhat.io/v1alpha1
+kind: VaultSecret
+metadata:
+  name: github-homelab-public-readonly
+  namespace: argocd
+spec:
+  refreshPeriod: 1h
+  vaultSecretDefinitions:
+    - authentication:
+        path: kubernetes
+        role: kubernetes
+        serviceAccount:
+          name:  argocd-server
+      name: github
+      path: secret/data/argocd/argocd
+  output:
+    name: argocd-github-homelab-public-readonly
+    labels:
+      argocd.argoproj.io/secret-type: repository
+    stringData:
+      type: git
+      url: '{{ .github.url }}'
+      username: '{{ .github.username }}'
+      password: '{{ .github.token }}'
+    type: Opaque
