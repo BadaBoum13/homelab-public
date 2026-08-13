@@ -10,7 +10,7 @@ spec:
   source:
     repoURL: oci://ghcr.io/prometheus-community/charts
     chart: prometheus-operator-crds
-    targetRevision: "*"
+    targetRevision: "76.2.0"
   destination:
     server: https://kubernetes.default.svc
     namespace: monitoring
