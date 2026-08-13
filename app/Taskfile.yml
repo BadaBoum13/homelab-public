@@ -25,13 +25,14 @@ tasks:
   deploy:
     desc: Deploy all components in dependency order
     cmds:
+      # - task: monitoring:prometheus-operator-crds:deploy
       - task: storage:namespace
       - task: storage:longhorn:deploy
       - task: security:namespace
       - task: security:deploy
-      - task: shared:namespace
-      - task: shared:deploy
-      - task: storage:nextcloud:deploy
+      # - task: shared:namespace
+      # - task: shared:deploy
+      # - task: storage:nextcloud:deploy
       - task: monitoring:deploy
 
   clean:
@@ -39,6 +40,6 @@ tasks:
     cmds:
       - task: monitoring:clean
       - task: storage:nextcloud:clean
-      - task: shared:clean
+      # - task: shared:clean
       - task: security:clean
       - task: storage:longhorn:clean

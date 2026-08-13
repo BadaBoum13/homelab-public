@@ -5,7 +5,7 @@ includes:
   openbao: ./openbao
   vault-config-operator: ./vault-config-operator
   cert-manager: ./cert-manager
-  external-secrets-operator: ./external-secrets-operator
+  # external-secrets-operator: ./external-secrets-operator
 
 tasks:
   default:
@@ -25,18 +25,18 @@ tasks:
     desc: Add/update all Helm repositories
     cmds:
       - task: openbao:repos
-      - task: external-secrets-operator:repos
+      - task: vault-config-operator:repos
 
   deploy:
     desc: Deploy all security components
     cmds:
       - task: openbao:deploy
       - task: cert-manager:deploy
-      - task: external-secrets-operator:deploy
+      - task: vault-config-operator:deploy
 
   clean:
     desc: Remove all security components
     cmds:
-      - task: external-secrets-operator:clean
+      - task: vault-config-operator:clean
       - task: cert-manager:clean
       - task: openbao:clean

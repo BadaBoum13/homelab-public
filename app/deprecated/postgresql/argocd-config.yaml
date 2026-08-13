@@ -1,0 +1,25 @@
+apiVersion: argoproj.io/v1alpha1
+kind: Application
+metadata:
+  name: postgresql-config
+  namespace: argocd
+  annotations:
+    argocd.argoproj.io/sync-wave: "4"
+spec:
+  project: default
+  source:
+    repoURL: https://github.com/BadaBoum13/homelab-public.git
+    targetRevision: HEAD
+    path: app/shared/postgresql
+    directory:
+      recurse: false
+      include: "external-secret.yml"
+  destination:
+    server: https://kubernetes.default.svc
+    namespace: shared
+  syncPolicy:
+    automated:
+      prune: true
+      selfHeal: true
+    syncOptions:
+      - CreateNamespace=true
