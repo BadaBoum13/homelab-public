@@ -11,7 +11,8 @@ spec:
     path: app
     directory:
       recurse: true
-      include: "{argocd-helm,argocd-helm-crds,argocd-config}.yaml"
+      include: "**/{argocd-helm,argocd-helm-crds,argocd-config}.yaml"
+      exclude: "deprecated/*"
   destination:
     server: https://kubernetes.default.svc
     namespace: argocd
