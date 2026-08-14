@@ -10,7 +10,7 @@ spec:
   sources:
     - repoURL: oci://ghcr.io/prometheus-community/charts
       chart: kube-state-metrics
-      targetRevision: "6.1.4"
+      targetRevision: "8.3.0"
       helm:
         valueFiles:
           - $values/app/monitoring/kube-state-metrics/values.yaml
