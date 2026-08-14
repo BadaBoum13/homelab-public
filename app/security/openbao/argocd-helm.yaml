@@ -5,13 +5,16 @@ metadata:
   namespace: argocd
 spec:
   project: default
-  source:
-    repoURL: https://openbao.github.io/openbao-helm
-    chart: openbao
-    targetRevision: "0.29.1"  # pin la version
-    helm:
-      valueFiles:
-        - values.yaml
+  sources:
+    - repoURL: https://openbao.github.io/openbao-helm
+      chart: openbao
+      targetRevision: "0.29.1"
+      helm:
+        valueFiles:
+          - $values/app/security/openbao/values.yaml
+    - repoURL: https://github.com/BadaBoum13/homelab-public.git
+      targetRevision: HEAD
+      ref: values
   destination:
     server: https://kubernetes.default.svc
     namespace: security
