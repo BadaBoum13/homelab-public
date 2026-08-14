@@ -25,6 +25,9 @@ data:
           "automerge": true,
           "automergeType": "pr",
           "platformAutomerge": true
+        },
+        {
+          "reviewers": ["BadaBoum13"]
         }
       ]
     }
