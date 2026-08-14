@@ -1,0 +1,20 @@
+apiVersion: redhatcop.redhat.io/v1alpha1
+kind: VaultSecret
+metadata:
+  name: renovate-github-token
+  namespace: renovate
+spec:
+  refreshPeriod: 1h
+  vaultSecretDefinitions:
+    - authentication:
+        path: kubernetes
+        role: kubernetes
+        serviceAccount:
+          name: renovate
+      name: github
+      path: secret/data/renovate/renovate
+  output:
+    name: renovate-github-token
+    stringData:
+      RENOVATE_TOKEN: '{{ .github.token }}'
+    type: Opaque
