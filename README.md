@@ -154,6 +154,4 @@ ready.
 - [Vector](app/monitoring/vector/README.md) — Log pipeline
 - [kube-state-metrics](app/monitoring/kube-state-metrics/README.md) — K8s metrics
 - [node-exporter](app/monitoring/node-exporter/README.md) — Host metrics
-- [PostgreSQL](app/shared/postgresql/README.md) — Shared database
-- [Nextcloud](app/storage/nextcloud/README.md) — Cloud storage
 - [KRR](app/krr/README.md) — Resource recommender
