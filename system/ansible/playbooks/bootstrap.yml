@@ -114,12 +114,28 @@
           when: storage.enable_mount | default(false)
       when: storage.enable | default(false)
 
+    - name: Deploy safe shutdown script (drains node before power-off)
+      ansible.builtin.copy:
+        dest: /usr/local/sbin/k3s-safe-shutdown.sh
+        mode: "0700"
+        owner: root
+        content: |
+          #!/bin/sh
+          set -u
+          /usr/local/bin/kubectl --kubeconfig /etc/rancher/k3s/k3s.yaml \
+            drain "$(hostname)" \
+            --ignore-daemonsets \
+            --delete-emptydir-data \
+            --force \
+            --timeout=480s
+          /sbin/shutdown -h now
+
     - name: Add daily shutdown cron job
       ansible.builtin.cron:
         name: "Daily shutdown at 23:30"
         minute: "30"
         hour: "23"
-        job: "shutdown -h now"
+        job: "/usr/local/sbin/k3s-safe-shutdown.sh"
         user: root
 
   handlers:

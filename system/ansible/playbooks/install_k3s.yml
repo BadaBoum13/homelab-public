@@ -4,6 +4,40 @@
   roles:
     - role: xanmanning.k3s
 
+# The nightly shutdown script drains (and thus cordons) the node before
+# power-off. Cordon state persists in k3s's datastore across reboots, so
+# this uncordons the node again once k3s is ready after every boot.
+- hosts: k3s_cluster
+  become: true
+  tasks:
+    - name: Deploy k3s-uncordon systemd unit
+      ansible.builtin.copy:
+        dest: /etc/systemd/system/k3s-uncordon.service
+        mode: "0644"
+        content: |
+          [Unit]
+          Description=Uncordon this node after k3s is ready
+          After=k3s.service
+          Requires=k3s.service
+
+          [Service]
+          Type=oneshot
+          ExecStart=/usr/local/bin/kubectl --kubeconfig /etc/rancher/k3s/k3s.yaml uncordon %H
+          Restart=on-failure
+          RestartSec=5s
+          StartLimitBurst=10
+
+          [Install]
+          WantedBy=multi-user.target
+      register: k3s_uncordon_unit
+
+    - name: Enable and start k3s-uncordon service
+      ansible.builtin.systemd:
+        name: k3s-uncordon.service
+        enabled: true
+        daemon_reload: "{{ k3s_uncordon_unit.changed }}"
+        state: started
+
 # Provision the HSM PIN as a k8s secret so OpenBao can unseal against the HSM.
 # Runs on a single k3s node (run_once), using the node's local k3s kubeconfig.
 - hosts: k3s_cluster
