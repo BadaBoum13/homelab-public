@@ -1,0 +1,36 @@
+cronjob:
+  schedule: "0 10-20/4 * * *" # very 4th hour from 10 through 20
+  concurrencyPolicy: Forbid
+  successfulJobsHistoryLimit: 3
+  failedJobsHistoryLimit: 3
+  ttlSecondsAfterFinished: 3600
+
+env:
+  LOG_LEVEL: ERROR
+
+existingSecret: renovate-github-token
+
+renovate:
+  existingConfigFile: /config/config.json
+
+extraVolumes:
+  - name: renovate-config
+    configMap:
+      name: renovate-config
+
+extraVolumeMounts:
+  - name: renovate-config
+    mountPath: /config
+    readOnly: true
+
+serviceAccount:
+  create: true
+  name: renovate
+
+resources:
+  limits:
+    cpu: 500m
+    memory: 1Gi
+  requests:
+    cpu: 100m
+    memory: 256Mi

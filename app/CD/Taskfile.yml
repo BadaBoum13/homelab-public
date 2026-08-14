@@ -3,6 +3,7 @@ version: '3'
 
 includes:
   argocd: ./argoCD
+  renovate: ./renovate
 
 tasks:
   default:
@@ -21,13 +22,16 @@ tasks:
     desc: Add/update all Helm repositories
     cmds:
       - task: argocd:repos
+      - task: renovate:repos
 
   deploy:
     desc: Deploy all CD components
     cmds:
       - task: argocd:deploy
+      - task: renovate:deploy
 
   clean:
     desc: Remove all CD components
     cmds:
       - task: argocd:clean
+      - task: renovate:clean

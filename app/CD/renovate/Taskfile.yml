@@ -1,0 +1,35 @@
+---
+version: '3'
+
+tasks:
+  default:
+    desc: Deploy renovate
+    cmds:
+      - task: deploy
+
+  repos:
+    desc: Add renovate Helm repository
+    vars:
+      REPO_NAME: renovate
+    cmds:
+      - helm repo add {{.REPO_NAME}} https://renovatebot.github.io/helm-charts
+      - helm repo update {{.REPO_NAME}}
+
+  deploy:
+    desc: Deploy renovate using Helm
+    vars:
+      NAMESPACE: renovate
+      REPO_NAME: renovate
+      CHART_NAME: renovate
+      RELEASE_NAME: renovate
+    cmds:
+      - helm upgrade --install {{.RELEASE_NAME}} {{.REPO_NAME}}/{{.CHART_NAME}} -n {{.NAMESPACE}} --create-namespace --version 46.251.0 -f {{.TASKFILE_DIR}}/values.yaml
+      - kubectl apply -f {{.TASKFILE_DIR}}/crd
+
+  clean:
+    desc: Remove renovate
+    vars:
+      NAMESPACE: renovate
+      RELEASE_NAME: renovate
+    cmds:
+      - helm uninstall {{.RELEASE_NAME}} -n {{.NAMESPACE}} --ignore-not-found
