@@ -10,7 +10,7 @@ spec:
   sources:
     - repoURL: https://redhat-cop.github.io/vault-config-operator
       chart: vault-config-operator
-      targetRevision: v0.8.51
+      targetRevision: v0.8.52
       helm:
         valueFiles:
           - $values/app/security/vault-config-operator/values.yml
