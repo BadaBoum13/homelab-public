@@ -1,23 +1,25 @@
 apiVersion: argoproj.io/v1alpha1
 kind: Application
 metadata:
-  name: vault-config-operatorr-config
+  name: grafana-config
   namespace: argocd
   annotations:
-    argocd.argoproj.io/sync-wave: "3"
+    argocd.argoproj.io/sync-wave: "4"
 spec:
   project: default
   source:
     repoURL: https://github.com/BadaBoum13/homelab-public.git
     targetRevision: HEAD
-    path: app/security/vault-config-operator
+    path: app/monitoring/grafana
     directory:
-      recurse: true
-      include: "crd"
+      recurse: false
+      include: "external-secret.yml"
   destination:
     server: https://kubernetes.default.svc
-    namespace: security
+    namespace: monitoring
   syncPolicy:
     automated:
       prune: true
       selfHeal: true
+    syncOptions:
+      - CreateNamespace=true

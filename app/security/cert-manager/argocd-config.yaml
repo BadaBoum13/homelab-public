@@ -13,7 +13,7 @@ spec:
     path: app/security/cert-manager
     directory:
       recurse: true
-      include: "crd"
+      include: "crd/*"
   destination:
     server: https://kubernetes.default.svc
     namespace: security

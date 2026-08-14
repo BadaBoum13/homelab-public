@@ -13,7 +13,7 @@ spec:
       targetRevision: 1.12.0
       helm:
         valueFiles:
-          - $values/app/storage/longhorn/values.yml
+          - $values/app/storage/longhorn/values.yaml
     - repoURL: https://github.com/BadaBoum13/homelab-public.git
       targetRevision: HEAD
       ref: values

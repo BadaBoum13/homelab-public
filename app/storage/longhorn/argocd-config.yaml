@@ -12,8 +12,8 @@ spec:
     targetRevision: HEAD
     path: app/storage/longhorn
     directory:
-      recurse: false
-      include: "storageclass_*.yml"
+      recurse: true
+      include: "crd/*"
   destination:
     server: https://kubernetes.default.svc
     namespace: longhorn-system
