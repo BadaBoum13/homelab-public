@@ -41,6 +41,21 @@
         state: present
       when: storage.enable | default(false)
 
+    - name: Blacklist Longhorn iSCSI LUNs from multipath
+      ansible.builtin.blockinfile:
+        path: /etc/multipath.conf
+        create: yes
+        block: |
+          blacklist {
+              device {
+                  vendor  "IET"
+                  product "VIRTUAL-DISK"
+              }
+          }
+        marker: "# {mark} ANSIBLE MANAGED BLOCK - Longhorn iSCSI blacklist"
+      when: storage.enable | default(false)
+      notify: restart multipathd
+
     - name: Set zsh as default shell for root
       user:
         name: root
@@ -142,6 +157,11 @@
     - name: restart ssh
       service:
         name: ssh
+        state: restarted
+
+    - name: restart multipathd
+      service:
+        name: multipathd
         state: restarted
 
 - name: Bootstrap SoftHSM2

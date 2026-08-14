@@ -18,6 +18,12 @@ spec:
   destination:
     server: https://kubernetes.default.svc
     namespace: security
+  ignoreDifferences:
+    - group: admissionregistration.k8s.io
+      kind: MutatingWebhookConfiguration
+      name: openbao-agent-injector-cfg
+      jsonPointers:
+        - /webhooks/0/clientConfig/caBundle
   syncPolicy:
     automated:
       prune: false
