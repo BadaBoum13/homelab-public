@@ -10,7 +10,7 @@ RUN apt-get update \
         python3 python3-pip python3-venv python3-setuptools python3-wheel \
         jq yq curl unzip git nano zsh tree htop \
         apt-transport-https gnupg wget groff sudo \
-        ca-certificates \
+        ca-certificates ssh \
     && apt-get clean \
     && rm -rf /var/lib/apt/lists/*
 

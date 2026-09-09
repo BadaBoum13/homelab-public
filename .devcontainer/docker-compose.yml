@@ -7,9 +7,14 @@ services:
         - USERNAME=devcontainer
         - USER_UID=1001
     volumes:
-      - ..:/workspaces:cached
+      - .:/workspaces:cached
       - /home/julien/.ssh/:/home/devcontainer/.ssh
       - ./images/zsh/mise.toml:/home/devcontainer/mise.toml:rw
       - ./images/zsh/.zshrc:/home/devcontainer/.zshrc:rw
       - ./images/zsh/.p10k.zsh:/home/devcontainer/.p10k.zsh:rw
       - ./images/zsh/:/home/devcontainer/zsh_history_data/
+
+networks:
+  default:
+    name: devcontainer_shared
+    external: true

@@ -5,3 +5,5 @@ system/ansible/test_env/longhorn-data/*
 
 # OpenBao init material (root token + recovery keys) — never commit
 .openbao-init.json
+
+**/.zsh_history

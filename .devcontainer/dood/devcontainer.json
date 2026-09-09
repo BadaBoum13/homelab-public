@@ -4,6 +4,7 @@
 {
 	"name": "dood",
 	"dockerComposeFile": "../docker-compose.yml",
+	"initializeCommand": "docker network inspect devcontainer_shared >/dev/null 2>&1 || docker network create devcontainer_shared",
 	"service": "devcontainer",
 	"workspaceFolder": "/workspaces",
 	"shutdownAction": "none",
