@@ -3,7 +3,7 @@
   hosts: node0
   gather_facts: no
   vars:
-    local_kubeconfig_path: "{{ lookup('env', 'HOME') }}/.kube/config-k3s"
+    local_kubeconfig_path: "{{ lookup('env', 'HOME') }}/.kube/config-k3s-dev"
     fixed_container_ip: "127.0.0.1"
     # fixed_container_ip: "172.20.0.10"
 

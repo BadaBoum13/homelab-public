@@ -30,6 +30,7 @@
       ansible.builtin.pip:
         name:
           - kubernetes
+        extra_args: "--ignore-installed"
         break_system_packages: true
         state: present
 
