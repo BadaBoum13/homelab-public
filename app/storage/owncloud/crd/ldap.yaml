@@ -1,0 +1,24 @@
+# Bind password oCIS uses for the OpenLDAP admin (cn=admin,dc=owncloud,dc=com),
+# generated in OpenBao by app/shared/openldap/crd/random-secrets.yaml.
+apiVersion: redhatcop.redhat.io/v1alpha1
+kind: VaultSecret
+metadata:
+  name: ldap-bind-secrets
+  namespace: owncloud
+  annotations:
+    argocd.argoproj.io/sync-wave: "1"
+spec:
+  refreshPeriod: 1h
+  vaultSecretDefinitions:
+    - authentication:
+        path: kubernetes
+        role: kubernetes
+        serviceAccount:
+          name: default
+      name: ldap
+      path: secret/data/owncloud/openldap-admin
+  output:
+    name: ldap-bind-secrets
+    stringData:
+      reva-ldap-bind-password: '{{ .ldap.password }}'
+    type: Opaque

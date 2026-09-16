@@ -1,0 +1,92 @@
+externalDomain: owncloud.biduleproofzone.ovh
+
+secretRefs:
+  oidcSecretRef: ocis-oidc
+  ldapSecretRef: ldap-bind-secrets
+
+features:
+  externalUserManagement:
+    enabled: true
+    autoprovisionAccounts:
+      enabled: true
+      claimUserName: email
+    oidc:
+      issuerURI: https://homelab-ikyt.eu.auth0.com/   # needed for the CSP (proxy/config.yaml:49)
+      userIDClaim: email
+      userIDClaimAttributeMapping: mail
+      accessTokenVerifyMethod: none                   # Auth0 issues opaque tokens without an audience
+      roleAssignment:
+        enabled: true
+        claim: https://owncloud.biduleproofzone.ovh/roles
+        mapping:
+          - role_name: admin
+            claim_value: ocisAdmin
+          - role_name: user
+            claim_value: ocisUser
+    # OpenLDAP from app/shared/openldap; baseDNs are the chart defaults
+    ldap:
+      writeable: true
+      uri: ldap://openldap.owncloud.svc.cluster.local:389
+      insecure: true
+      bindDN: cn=admin,dc=owncloud,dc=com
+      user:
+        schema:
+          id: ownCloudUUID
+      group:
+        schema:
+          id: ownCloudUUID
+
+# The chart's CSP drops oCIS's default awesome-ocis entry, which the App Store
+# needs to fetch its catalog (lists replace the chart defaults, so keep them)
+http:
+  csp:
+    directives:
+      connectSrc:
+        - "'self'"
+        - "https://raw.githubusercontent.com/owncloud/awesome-ocis/"
+      imgSrc:
+        - "'self'"
+        - "data:"
+        - "blob:"
+        - "https://raw.githubusercontent.com/owncloud/awesome-ocis/"
+
+ingress:
+  enabled: true
+  ingressClassName: traefik
+  annotations:
+    cert-manager.io/cluster-issuer: cloudflare
+    gethomepage.dev/enabled: "true"
+    gethomepage.dev/name: owncloud
+  tls:
+    - secretName: owncloud-tls
+      hosts:
+        - owncloud.biduleproofzone.ovh
+
+resources:
+  requests:
+    cpu: 50m
+    memory: 128Mi
+  limits:
+    memory: 2048Mi
+
+services:
+  storagesystem:
+    persistence:
+      enabled: true
+      storageClassName: longhorn
+      size: 2Gi
+  storageusers:
+    persistence:
+      enabled: true
+      storageClassName: longhorn
+      size: 100Gi
+  search:
+    persistence:
+      enabled: true
+      storageClassName: longhorn
+      size: 5Gi
+  thumbnails:
+    persistence:
+      enabled: true
+      storageClassName: longhorn
+      size: 5Gi

@@ -1,0 +1,28 @@
+---
+version: '3'
+
+tasks:
+  default:
+    desc: Deploy owncloud
+    cmds:
+      - task: deploy
+
+  deploy:
+    desc: Deploy owncloud using Helm
+    vars:
+      NAMESPACE: owncloud
+      REPO_NAME: oci://ghcr.io/badaboum13/charts/ocis
+      RELEASE_NAME: owncloud
+      VERSION: 0.7.0
+    cmds:
+      - helm upgrade --install {{.RELEASE_NAME}} {{.REPO_NAME}} --version {{.VERSION}} -n {{.NAMESPACE}} -f {{.TASKFILE_DIR}}/values.yaml
+      - kubectl apply -f {{.TASKFILE_DIR}}/crd
+
+  clean:
+    desc: Remove owncloud
+    vars:
+      NAMESPACE: owncloud
+      RELEASE_NAME: owncloud
+    cmds:
+      - kubectl delete -f {{.TASKFILE_DIR}}/crd --ignore-not-found
+      - helm uninstall {{.RELEASE_NAME}} -n {{.NAMESPACE}} --ignore-not-found
