@@ -8,15 +8,14 @@ Personal homelab running on a single-node K3s cluster, managed as code with Ansi
 Internet
    │
    ▼
-CloudFlare DNS (biduleproofzone.ovh)
+CloudFlare DNS
    │  TLS via Let's Encrypt (DNS01 challenge)
    ▼
 Traefik (Ingress Controller)
    │
-   ├── argocd.biduleproofzone.ovh  ──► ArgoCD
-   ├── grafana.biduleproofzone.ovh ──► Grafana
-   ├── longhorn.biduleproofzone.ovh──► Longhorn UI
-   └── nextcloud.biduleproofzone.ovh──► Nextcloud
+   ├── xxxx.test.com  ──► app1
+   ├── xxxx.test.com ──► app2
+   └── xxxx.test.com──► app3
 
 Node (192.168.1.100) — K3s single-node cluster
    ├── /mnt/short_live_storage  (SSD — fast, small)
@@ -35,9 +34,9 @@ VPN: Tailscale (exit node + SSH)
 
 | Class | Backend | Mount | Use |
 |---|---|---|---|
-| `longhorn-ssd` | SSD | `/mnt/short_live_storage` | Databases, metrics, fast I/O |
-| `longhorn-raid` | HDD RAID | `/mnt/long_storage` | Nextcloud bulk data |
-| `longhorn-ssd-short-live` | SSD | `/mnt/short_live_storage` | Temporary / ephemeral |
+| `longhorn-ssd` | SSD | `/mnt/short_live_storage` | data without backup with fast I/O |
+| `longhorn-raid` | HDD RAID | `/mnt/long_storage` | data with external backup |
+| `longhorn-ssd-short-live` | SSD | `/mnt/short_live_storage` | Temporary / ephemeral with delete policy |
 
 ### Networking
 
@@ -59,8 +58,7 @@ All ingress routes through Traefik with a global HTTP→HTTPS redirect. TLS cert
 | **Log pipeline** | Vector | DaemonSet collecting and shipping logs |
 | **Metrics exporters** | kube-state-metrics, node-exporter | K8s object + host-level metrics |
 | **Visualization** | Grafana | Dashboards for metrics and logs |
-| **Database** | PostgreSQL | Shared relational DB (used by Nextcloud) |
-| **Cloud storage** | Nextcloud | Self-hosted file sync and collaboration |
+| **Cloud storage** | Owncloud | Self-hosted file sync and collaboration |
 | **Resource advisor** | KRR | Kubernetes resource request/limit recommendations |
 | **Provisioning** | Ansible | Node bootstrap, K3s install, Tailscale setup |
 
@@ -91,7 +89,7 @@ All ingress routes through Traefik with a global HTTP→HTTPS redirect. TLS cert
 │   │   └── postgresql/         # Shared PostgreSQL instance
 │   └── storage/
 │       ├── longhorn/           # Distributed block storage
-│       └── nextcloud/          # Self-hosted cloud storage
+│       └── owncloud/          # Self-hosted cloud storage
 └── system/
     └── ansible/                # Infrastructure provisioning
         ├── playbooks/          # bootstrap, install_k3s, tailscale
@@ -109,7 +107,7 @@ ArgoCD deploys applications in waves to respect dependency ordering:
 |---|---|---|
 | 0 | prometheus-operator-crds | CRDs must exist before VictoriaMetrics operator |
 | 1 | cert-manager, longhorn, victoriametrics-operator-crds | Infrastructure layer |
-| 2 | postgresql, kube-state-metrics, grafana, vector, node-exporter, victoriametrics, nextcloud | Applications and monitoring stack |
+| 2 | kube-state-metrics, grafana, vector, node-exporter, victoriametrics, owncloud | Applications and monitoring stack |
 | 3 | victoriametrics-config, traefik-config, cert-manager-config, longhorn-config | Configuration CRs applied after operators are ready |
 
 ---
@@ -149,9 +147,9 @@ ready.
 - [Traefik](app/network/traefik/README.md) — Ingress controller
 - [cert-manager](app/security/cert-manager/README.md) — TLS automation
 - [Longhorn](app/storage/longhorn/README.md) — Block storage
+- [Owncloud](app/storage/owncloud/README.md) — Self-hosted cloud storage
 - [VictoriaMetrics](app/monitoring/victoriametrics/README.md) — Metrics & logs
 - [Grafana](app/monitoring/grafana/README.md) — Dashboards
-- [Vector](app/monitoring/vector/README.md) — Log pipeline
 - [kube-state-metrics](app/monitoring/kube-state-metrics/README.md) — K8s metrics
 - [node-exporter](app/monitoring/node-exporter/README.md) — Host metrics
 - [KRR](app/krr/README.md) — Resource recommender

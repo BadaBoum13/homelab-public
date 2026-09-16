@@ -2,7 +2,7 @@
 version: '3'
 
 includes:
-  postgresql: ./postgresql
+  owncloud: ./owncloud
 
 tasks:
   default:
@@ -19,9 +19,9 @@ tasks:
   deploy:
     desc: Deploy all shared components
     cmds:
-      - task: postgresql:deploy
+      - task: owncloud:deploy
 
   clean:
     desc: Remove all shared components
     cmds:
-      - task: postgresql:clean
+      - task: owncloud:clean
