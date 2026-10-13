@@ -12,6 +12,14 @@ storage:
   path_mount_long_storage: "/mnt/long_storage"
   path_mount_short_storage: "/mnt/short_live_storage"
 
+# The long_storage fstab entry is nofail (node stays bootable), so k3s itself
+# must refuse to start without it: otherwise Longhorn creates empty replicas
+# in the bare mountpoint on the root FS and the CSI driver mkfs's them.
+k3s_service_requires:
+  - mnt-long_storage.mount
+k3s_service_after:
+  - mnt-long_storage.mount
+
 longhorn_starage_labels:
   - path: "{{ storage.path_mount }}"
     allowScheduling: true

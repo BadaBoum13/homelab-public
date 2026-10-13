@@ -125,7 +125,7 @@
             path: "{{ storage.path_mount_long_storage }}"
             src: "UUID={{ storage.device_id }}"
             fstype: "{{ storage.fs_type }}"
-            opts: defaults,nofail #,x-systemd.device-timeout=30
+            opts: defaults,nofail,x-systemd.device-timeout=30
             state: mounted
           when: storage.enable_mount | default(false)
       when: storage.enable | default(false)
