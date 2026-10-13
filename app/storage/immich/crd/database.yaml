@@ -1,0 +1,26 @@
+# PostgreSQL for Immich, managed by CloudNativePG (app/storage/cloudnative-pg).
+# The tensorchord image ships VectorChord + pgvector, which Immich requires.
+# CNPG generates the app credentials into the `immich-db-app` Secret (key `uri`
+# is consumed as DB_URL in values.yaml).
+apiVersion: postgresql.cnpg.io/v1
+kind: Cluster
+metadata:
+  name: immich-db
+  namespace: immich
+spec:
+  instances: 1
+  imageName: ghcr.io/tensorchord/cloudnative-vectorchord:18.6-1.1.1
+  postgresql:
+    shared_preload_libraries:
+      - vchord.so
+  bootstrap:
+    initdb:
+      database: immich
+      owner: immich
+      # Created as superuser here, since the immich role cannot create extensions
+      postInitApplicationSQL:
+        - CREATE EXTENSION IF NOT EXISTS vchord CASCADE;
+        - CREATE EXTENSION IF NOT EXISTS earthdistance CASCADE;
+  storage:
+    storageClass: longhorn-ssd
+    size: 10Gi

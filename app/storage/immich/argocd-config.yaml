@@ -1,0 +1,27 @@
+apiVersion: argoproj.io/v1alpha1
+kind: Application
+metadata:
+  name: immich-config
+  namespace: argocd
+  annotations:
+    # Before the chart: the library PVC, database and config Secret must exist
+    # for the server pod to start (same ordering as owncloud-config)
+    argocd.argoproj.io/sync-wave: "2"
+spec:
+  project: default
+  source:
+    repoURL: https://github.com/BadaBoum13/homelab-public.git
+    targetRevision: HEAD
+    path: app/storage/immich
+    directory:
+      recurse: true
+      include: "crd/*"
+  destination:
+    server: https://kubernetes.default.svc
+    namespace: immich
+  syncPolicy:
+    automated:
+      prune: true
+      selfHeal: true
+    syncOptions:
+      - CreateNamespace=true
