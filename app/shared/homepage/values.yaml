@@ -1,0 +1,42 @@
+enableRbac: true
+
+serviceAccount:
+  create: true
+
+ingress:
+  main:
+    enabled: true
+    ingressClassName: traefik
+    annotations:
+      cert-manager.io/cluster-issuer: cloudflare
+    hosts:
+      - host: homepage.biduleproofzone.ovh
+        paths:
+          - path: /
+            pathType: Prefix
+    tls:
+      - secretName: homepage-tls
+        hosts:
+          - homepage.biduleproofzone.ovh
+
+config:
+  bookmarks: []
+  services: []
+  widgets:
+    - kubernetes:
+        cluster:
+          show: true
+          cpu: true
+          memory: true
+        nodes:
+          show: true
+          cpu: true
+          memory: true
+  kubernetes:
+    mode: cluster
+  settingsString: |
+    title: Homepage
+
+env:
+  - name: HOMEPAGE_ALLOWED_HOSTS
+    value: homepage.biduleproofzone.ovh
