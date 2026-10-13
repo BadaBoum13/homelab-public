@@ -1,0 +1,14 @@
+# Photo/video library. The chart does not create it (immich.persistence.library
+# only accepts an existingClaim). Bulk data, so it goes on the HDD RAID tier.
+apiVersion: v1
+kind: PersistentVolumeClaim
+metadata:
+  name: immich-library
+  namespace: immich
+spec:
+  accessModes:
+    - ReadWriteOnce
+  storageClassName: longhorn-raid
+  resources:
+    requests:
+      storage: 100Gi

@@ -1,0 +1,34 @@
+# Immich config file with Auth0 OAuth, pulled from OpenBao by vault-config-operator
+# (same Auth0 KV layout as app/CD/argoCD/crd/oidc.yml). Mounted by the chart via
+# immich.existingConfiguration; while a config file is used, the admin UI
+# settings are read-only.
+apiVersion: redhatcop.redhat.io/v1alpha1
+kind: VaultSecret
+metadata:
+  name: immich-config
+  namespace: immich
+spec:
+  refreshPeriod: 1h
+  vaultSecretDefinitions:
+    - authentication:
+        path: kubernetes
+        role: kubernetes
+        serviceAccount:
+          name: default
+      name: auth0
+      path: auth0/data/immich/immich
+  output:
+    name: immich-config
+    stringData:
+      immich-config.yaml: |
+        oauth:
+          enabled: true
+          autoRegister: true
+          buttonText: Login with Auth0
+          issuerUrl: "{{ .auth0.issuer }}"
+          clientId: "{{ .auth0.client_id }}"
+          clientSecret: "{{ .auth0.client_secret }}"
+          scope: openid email profile
+        passwordLogin:
+          enabled: true
+    type: Opaque
