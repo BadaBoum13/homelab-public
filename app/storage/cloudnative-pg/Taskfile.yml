@@ -1,0 +1,35 @@
+---
+version: '3'
+
+tasks:
+  default:
+    desc: Deploy cloudnative-pg
+    cmds:
+      - task: deploy
+
+  repos:
+    desc: Add cloudnative-pg Helm repository
+    vars:
+      REPO_NAME: cnpg
+    cmds:
+      - helm repo add {{.REPO_NAME}} https://cloudnative-pg.github.io/charts
+      - helm repo update {{.REPO_NAME}}
+
+  deploy:
+    desc: Deploy cloudnative-pg using Helm
+    vars:
+      NAMESPACE: cnpg-system
+      CHART_NAME: cloudnative-pg
+      REPO_NAME: cnpg
+      RELEASE_NAME: cloudnative-pg
+      VERSION: 0.29.1
+    cmds:
+      - helm upgrade --install {{.RELEASE_NAME}} {{.REPO_NAME}}/{{.CHART_NAME}} --version {{.VERSION}} -n {{.NAMESPACE}} --create-namespace --wait -f {{.TASKFILE_DIR}}/values.yaml
+
+  clean:
+    desc: Remove cloudnative-pg
+    vars:
+      NAMESPACE: cnpg-system
+      RELEASE_NAME: cloudnative-pg
+    cmds:
+      - helm uninstall {{.RELEASE_NAME}} -n {{.NAMESPACE}} --ignore-not-found
