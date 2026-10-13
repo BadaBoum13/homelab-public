@@ -2,8 +2,11 @@
 version: '3'
 
 includes:
+  cloudnative-pg: ./cloudnative-pg
+  immich: ./immich
   longhorn: ./longhorn
-  nextcloud: ./nextcloud
+  openldap: ./openldap
+  owncloud: ./owncloud
 
 tasks:
   default:
@@ -17,22 +20,27 @@ tasks:
     desc: Create storage namespaces
     cmds:
       - kubectl create namespace longhorn-system --dry-run=client -o yaml | kubectl apply -f -
-      # - kubectl create namespace nextcloud --dry-run=client -o yaml | kubectl apply -f -
 
   repos:
     desc: Add/update all Helm repositories
     cmds:
       - task: longhorn:repos
-      # - task: nextcloud:repos
+      - task: cloudnative-pg:repos
+      - task: openldap:repos
 
   deploy:
     desc: Deploy all storage components
     cmds:
       - task: longhorn:deploy
-      # - task: nextcloud:deploy
-
+      - task: openldap:deploy
+      - task: owncloud:deploy
+      - task: cloudnative-pg:deploy
+      - task: immich:deploy
   clean:
     desc: Remove all storage components
     cmds:
-      - task: nextcloud:clean
       # - task: longhorn:clean
+      - task: immich:clean
+      - task: cloudnative-pg:clean
+      - task: owncloud:clean
+      - task: openldap:clean
