@@ -1,0 +1,27 @@
+# Auth0 OIDC parameters for oCIS, pulled from OpenBao by vault-config-operator.
+# issuer + client_id are not secrets (both are public in the browser auth flow)
+# but routing them through OpenBao keeps the Auth0 app config in one place, the
+# same way app/CD/argoCD/crd/oidc.yml does for ArgoCD.
+apiVersion: redhatcop.redhat.io/v1alpha1
+kind: VaultSecret
+metadata:
+  name: ocis-oidc
+  namespace: owncloud
+  annotations:
+    argocd.argoproj.io/sync-wave: "1"
+spec:
+  refreshPeriod: 1h
+  vaultSecretDefinitions:
+    - authentication:
+        path: kubernetes
+        role: kubernetes
+        serviceAccount:
+          name: default
+      name: auth0
+      path: auth0/data/owncloud/owncloud
+  output:
+    name: ocis-oidc
+    stringData:
+      issuer-uri: '{{ .auth0.issuer }}'
+      client-id: '{{ .auth0.client_id }}'
+    type: Opaque

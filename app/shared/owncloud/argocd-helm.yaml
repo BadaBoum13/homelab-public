@@ -1,0 +1,28 @@
+apiVersion: argoproj.io/v1alpha1
+kind: Application
+metadata:
+  name: owncloud
+  namespace: argocd
+  annotations:
+    argocd.argoproj.io/sync-wave: "3"
+spec:
+  project: default
+  sources:
+    - repoURL: oci://ghcr.io/badaboum13/charts
+      chart: ocis
+      targetRevision: "0.7.0"
+      helm:
+        valueFiles:
+          - $values/app/shared/owncloud/values.yaml
+    - repoURL: https://github.com/BadaBoum13/homelab-public.git
+      targetRevision: HEAD
+      ref: values
+  destination:
+    server: https://kubernetes.default.svc
+    namespace: owncloud
+  syncPolicy:
+    automated:
+      prune: true
+      selfHeal: true
+    syncOptions:
+      - CreateNamespace=true

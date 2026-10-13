@@ -1,0 +1,49 @@
+externalDomain: owncloud.biduleproofzone.ovh
+
+secretRefs:
+  oidcSecretRef: ocis-oidc
+
+features:
+  externalUserManagement:
+    enabled: true
+    oidc:
+      issuerURI: https://homelab-ikyt.eu.auth0.com
+
+ingress:
+  enabled: true
+  ingressClassName: traefik
+  annotations:
+    cert-manager.io/cluster-issuer: cloudflare
+  tls:
+    - secretName: owncloud-tls
+      hosts:
+        - owncloud.biduleproofzone.ovh
+
+resources:
+  requests:
+    cpu: 50m
+    memory: 128Mi
+  limits:
+    memory: 2048Mi
+
+services:
+  storagesystem:
+    persistence:
+      enabled: true
+      storageClassName: longhorn
+      size: 2Gi
+  storageusers:
+    persistence:
+      enabled: true
+      storageClassName: longhorn
+      size: 100Gi
+  search:
+    persistence:
+      enabled: true
+      storageClassName: longhorn
+      size: 5Gi
+  thumbnails:
+    persistence:
+      enabled: true
+      storageClassName: longhorn
+      size: 5Gi
