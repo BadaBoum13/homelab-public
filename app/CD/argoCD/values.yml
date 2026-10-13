@@ -115,8 +115,8 @@ applicationSet:
   replicas: 1
   resources:
     limits:
-      cpu: 100m
-      memory: 512Mi
+      cpu: 500m
+      memory: 1Gi
     requests:
       cpu: 10m
       memory: 64Mi
