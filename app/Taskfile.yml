@@ -20,6 +20,7 @@ tasks:
     cmds:
       - task: monitoring:repos
       - task: security:repos
+      - task: shared:repos
       - task: storage:repos
 
   deploy:
@@ -32,14 +33,12 @@ tasks:
       - task: security:deploy
       # - task: shared:namespace
       # - task: shared:deploy
-      # - task: storage:nextcloud:deploy
       - task: monitoring:deploy
 
   clean:
     desc: Remove all components in reverse dependency order
     cmds:
       - task: monitoring:clean
-      - task: storage:nextcloud:clean
       # - task: shared:clean
       - task: security:clean
       - task: storage:longhorn:clean

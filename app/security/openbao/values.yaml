@@ -144,6 +144,8 @@ server:
     ingressClassName: traefik
     annotations:
       cert-manager.io/cluster-issuer: "cloudflare"
+      gethomepage.dev/enabled: "true"
+      gethomepage.dev/name: "openbao"
     hosts:
       - host: openbao.biduleproofzone.ovh
         paths:
