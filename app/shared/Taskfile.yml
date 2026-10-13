@@ -2,13 +2,14 @@
 version: '3'
 
 includes:
-  owncloud: ./owncloud
+  homepage: ./homepage
 
 tasks:
   default:
     desc: Deploy all shared components
     cmds:
       - task: namespace
+      - task: repos
       - task: deploy
 
   namespace:
@@ -16,12 +17,17 @@ tasks:
     cmds:
       - kubectl create namespace shared --dry-run=client -o yaml | kubectl apply -f -
 
+  repos:
+    desc: Add/update all Helm repositories
+    cmds:
+      - task: homepage:repos
+
   deploy:
     desc: Deploy all shared components
     cmds:
-      - task: owncloud:deploy
+      - task: homepage:deploy
 
   clean:
     desc: Remove all shared components
     cmds:
-      - task: owncloud:clean
+      - task: homepage:clean

@@ -1,0 +1,37 @@
+---
+version: '3'
+
+tasks:
+  default:
+    desc: Deploy homepage
+    cmds:
+      - task: repos
+      - task: deploy
+
+  repos:
+    desc: Add homepage Helm repository
+    vars:
+      REPO_NAME: jameswynn
+    cmds:
+      - helm repo add {{.REPO_NAME}} https://jameswynn.github.io/helm-charts
+      - helm repo update {{.REPO_NAME}}
+
+  deploy:
+    desc: Deploy homepage using Helm
+    vars:
+      NAMESPACE: shared
+      CHART_NAME: homepage
+      REPO_NAME: jameswynn
+      RELEASE_NAME: homepage
+      VERSION: 2.1.0
+    cmds:
+      - kubectl create namespace {{.NAMESPACE}} --dry-run=client -o yaml | kubectl apply -f -
+      - helm upgrade --install {{.RELEASE_NAME}} {{.REPO_NAME}}/{{.CHART_NAME}} --version {{.VERSION}} -n {{.NAMESPACE}} -f {{.TASKFILE_DIR}}/values.yaml
+
+  clean:
+    desc: Remove homepage
+    vars:
+      NAMESPACE: shared
+      RELEASE_NAME: homepage
+    cmds:
+      - helm uninstall {{.RELEASE_NAME}} -n {{.NAMESPACE}} --ignore-not-found
